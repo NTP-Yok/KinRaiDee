@@ -24,6 +24,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);
 body{padding-top:var(--safe-t);padding-bottom:calc(76px + var(--safe-b));min-height:100vh}
 button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
 input,textarea,select{font:inherit;color:inherit}
+textarea.field{resize:vertical}
 header.top{padding:14px 18px 6px;display:flex;align-items:center;gap:10px}
 header.top h1{font-size:22px;margin:0;font-weight:700}
 header.top .sub{color:var(--muted);font-size:14px}
@@ -133,18 +134,19 @@ nav.tabs button.on .i{filter:none;opacity:1}
       <button data-v="place">🏠 สุ่มร้าน</button>
       <button data-v="dish">🍜 สุ่มเมนู</button>
     </div>
-    <div class="label">ไปกิน หรือ สั่งมา</div>
+    <div class="label">กินแบบไหน</div>
     <div class="chips" id="chipsMode">
       <button class="chip" data-v="any">ได้หมด</button>
       <button class="chip" data-v="dinein">🚶 ไปกินที่ร้าน</button>
       <button class="chip" data-v="delivery">🛵 สั่งมากิน</button>
+      <button class="chip" data-v="cook">🍳 ทำกินเอง</button>
     </div>
-    <div class="label">ช่วงราคา</div>
+    <div id="priceRow"><div class="label">ช่วงราคา</div>
     <div class="chips" id="chipsPrice">
       <button class="chip green" data-v="1">฿ ประหยัด</button>
       <button class="chip green" data-v="2">฿฿ ปกติ</button>
       <button class="chip green" data-v="3">฿฿฿ มื้อพิเศษ</button>
-    </div>
+    </div></div>
     <div class="row mt">
       <div><b>ไม่เอาที่เพิ่งกิน</b><div class="muted" style="font-size:13px" id="noRepLabel"></div></div>
       <label class="switch"><input type="checkbox" id="swNoRepeat"><span></span></label>
@@ -188,24 +190,60 @@ nav.tabs button.on .i{filter:none;opacity:1}
 
 <!-- ============ PAGE: HISTORY ============ -->
 <section class="page" id="page-history">
-  <div class="card" id="syncCard"></div>
-  <div class="hgroup">กินอะไรไปแล้วบ้าง</div>
   <div class="card" id="historyList" style="padding:4px 12px"></div>
-  <div class="hgroup">ตั้งค่า</div>
+</section>
+
+<!-- ============ PAGE: SETTINGS ============ -->
+<section class="page" id="page-settings">
+  <div class="card" id="syncCard"></div>
+
+  <div class="hgroup">🎡 วงล้อ</div>
   <div class="card">
-    <div class="row">
-      <div><b>ไม่ซ้ำย้อนหลังกี่วัน</b><div class="muted" style="font-size:13px">ใช้กับปุ่ม "ไม่เอาที่เพิ่งกิน"</div></div>
-      <div class="row" style="gap:6px">
-        <button class="btn ghost small" id="dayMinus">−</button>
-        <b id="dayVal" style="min-width:22px;text-align:center"></b>
-        <button class="btn ghost small" id="dayPlus">+</button>
-      </div>
+    <b>จำนวนช่องบนวงล้อ</b>
+    <div class="muted" style="font-size:13px">ถ้าตัวเลือกเยอะกว่านี้ แอปจะสุ่มมาใส่วงล้อเท่าจำนวนนี้</div>
+    <div class="chips mt" id="setWheelN">
+      <button class="chip" data-v="6">6 ช่อง</button><button class="chip" data-v="8">8 ช่อง</button>
+      <button class="chip" data-v="12">12 ช่อง</button><button class="chip" data-v="0">ทุกตัวเลือก</button>
     </div>
+  </div>
+
+  <div class="hgroup">💞 ปัดจับคู่</div>
+  <div class="card">
+    <b>การ์ดที่เอามาปัด มาจากไหน</b>
+    <div class="seg mt" id="setSwipeMode">
+      <button data-v="random">🎲 แอปสุ่มให้</button>
+      <button data-v="pick">✋ ต่างคนต่างเลือก</button>
+    </div>
+    <div class="muted" style="font-size:13px;margin-top:8px" id="swipeModeDesc"></div>
+    <div id="rowSwipeN"><div class="label">จำนวนการ์ดที่สุ่มมา</div>
+      <div class="chips" id="setSwipeN">
+        <button class="chip" data-v="5">5 ใบ</button><button class="chip" data-v="8">8 ใบ</button>
+        <button class="chip" data-v="12">12 ใบ</button><button class="chip" data-v="0">ทุกตัวเลือก</button>
+      </div></div>
+    <div id="rowPickN"><div class="label">แต่ละคนเลือกได้กี่อย่าง</div>
+      <div class="chips" id="setPickN">
+        <button class="chip" data-v="1">1 อย่าง</button><button class="chip" data-v="2">2 อย่าง</button>
+        <button class="chip" data-v="3">3 อย่าง</button><button class="chip" data-v="5">5 อย่าง</button>
+      </div></div>
     <div class="label">ชื่อคนปัด (โหมดปัดเครื่องเดียว)</div>
     <div class="btns2"><input class="field" id="p1" maxlength="20"><input class="field" id="p2" maxlength="20"></div>
   </div>
+
+  <div class="hgroup">🚫 ไม่เอาที่เพิ่งกิน</div>
   <div class="card">
-    <b>สำรอง / ส่งข้อมูลให้อีกเครื่อง</b>
+    <div class="row">
+      <div><b>ข้ามที่กินไปแล้วย้อนหลัง</b><div class="muted" style="font-size:13px">ใช้ตอนเปิดสวิตช์ "ไม่เอาที่เพิ่งกิน"</div></div>
+      <div class="row" style="gap:6px">
+        <button class="btn ghost small" id="dayMinus">−</button>
+        <b id="dayVal" style="min-width:52px;text-align:center"></b>
+        <button class="btn ghost small" id="dayPlus">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hgroup">💾 ข้อมูล</div>
+  <div class="card">
+    <b>สำรองเป็นไฟล์</b>
     <div class="muted" style="font-size:13px;margin:4px 0 10px">เก็บร้าน เมนู และประวัติเป็นไฟล์ไว้กันเหนียว (ถ้าเชื่อมบ้านอยู่ การนำเข้าจะรวมเข้ากับข้อมูลของบ้าน)</div>
     <div class="btns2">
       <button class="btn ghost small" id="btnExport">⬇️ ส่งออก</button>
@@ -214,7 +252,7 @@ nav.tabs button.on .i{filter:none;opacity:1}
     <input type="file" id="fileImport" accept=".json,application/json" style="display:none">
   </div>
   <div style="text-align:center;margin:6px 0 10px"><button class="muted" style="font-size:13px;text-decoration:underline" id="btnReset">ล้างข้อมูลทั้งหมด</button></div>
-  <div class="muted" style="font-size:12px;text-align:center">กินไรดี V.0.2.0</div>
+  <div class="muted" style="font-size:12px;text-align:center">กินไรดี V.0.3.0</div>
 </section>
 </main>
 
@@ -224,6 +262,7 @@ nav.tabs button.on .i{filter:none;opacity:1}
   <button data-p="spin" class="on"><span class="i">🎡</span>สุ่ม</button>
   <button data-p="manage"><span class="i">📋</span>ร้าน & เมนู</button>
   <button data-p="history"><span class="i">🕘</span>ประวัติ</button>
+  <button data-p="settings"><span class="i">⚙️</span>ตั้งค่า</button>
 </nav>
 
 <!-- modal (place / dish form) -->
@@ -243,6 +282,7 @@ nav.tabs button.on .i{filter:none;opacity:1}
 const DEV=new URLSearchParams(location.search).get('dev')||'';
 const KEY='kinraidee_v1'+(DEV?'_'+DEV:'');
 const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const COOKABLE=['กะเพรา','ข้าวผัด','ผัดไทย','สุกี้','หมูกระทะ','ชาบู','สปาเกตตี','ส้มตำ','ไก่ทอด','ก๋วยเตี๋ยว','สเต๊ก'];
 const SEED_DISHES=[
  ['🌶️','กะเพรา'],['🍗','ข้าวมันไก่'],['🍜','ก๋วยเตี๋ยว'],['🥗','ส้มตำ'],['🍲','ชาบู'],['🔥','หมูกระทะ'],
  ['🍥','ราเมง'],['🍣','ซูชิ'],['🍤','ผัดไทย'],['🍛','ข้าวขาหมู'],['🥘','สุกี้'],['🍕','พิซซ่า'],
@@ -251,13 +291,13 @@ const SEED_DISHES=[
 function freshState(){
   const t0=Date.now();
   return {ver:2,
-    dishes:SEED_DISHES.map(([e,n],i)=>({id:uid(),emoji:e,name:n,ts:t0+i})),
+    dishes:SEED_DISHES.map(([e,n],i)=>({id:uid(),emoji:e,name:n,ts:t0+i,cook:COOKABLE.includes(n)})),
     places:[], history:[],
-    settings:{noRepeatDays:3,p1:'คนที่ 1',p2:'คนที่ 2'},
+    settings:{noRepeatDays:3,p1:'คนที่ 1',p2:'คนที่ 2',wheelN:12,swipeMode:'random',swipeN:8,pickN:3},
     filters:{target:'dish',mode:'any',price:[1,2,3],noRepeat:true,decide:'wheel'},
     home:null, myName:'', seen:[]};
 }
-let S;
+let S;const MIG=new Set(); // เมนูที่ติดป้าย "ทำเองได้" อัตโนมัติ ต้องส่งขึ้นบ้านด้วย
 function load(){
   try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw);}}catch(e){}
   if(!S||!Array.isArray(S.dishes)){S=freshState();}
@@ -266,7 +306,8 @@ function load(){
   S.filters=Object.assign(d.filters,S.filters||{});
   S.places=S.places||[];S.history=S.history||[];S.seen=S.seen||[];
   if(S.home===undefined)S.home=null; if(!S.myName)S.myName='';
-  let t=1;S.dishes.forEach(x=>{if(!x.ts)x.ts=t++;});S.places.forEach(x=>{if(!x.ts)x.ts=Date.now()+t++;});
+  let t=1;S.dishes.forEach(x=>{if(!x.ts)x.ts=t++;});
+  if(!S.migCook){S.migCook=true;S.dishes.forEach(x=>{if(x.cook===undefined&&COOKABLE.includes(x.name)){x.cook=true;MIG.add(x.id);}});}S.places.forEach(x=>{if(!x.ts)x.ts=Date.now()+t++;});
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
@@ -286,6 +327,7 @@ function delItem(col,id){S[col]=S[col].filter(x=>x.id!==id);save();if(synced())C
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const priceTxt=p=>'฿'.repeat(p||1);
+const linkify=t=>esc(t).replace(/https?:\/\/[^\s<]+/g,u=>`<a href="${u}" target="_blank" rel="noopener" style="color:#B4532C">${u.length>40?u.slice(0,40)+'…':u}</a>`);
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1800);}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 const dishById=id=>S.dishes.find(d=>d.id===id);
@@ -313,11 +355,17 @@ function placeTags(p){
   return t;
 }
 /* candidates → [{kind,id,emoji,name}] */
+const tgt=()=>S.filters.mode==='cook'?'dish':S.filters.target;
+const COOK_ITEM={kind:'cook',id:'home',emoji:'🍳',name:'ทำกินเองที่บ้าน'};
+const cookDishes=noRep=>{const {di}=recentSets();return S.dishes.filter(d=>d.cook&&(!noRep||!di.has(d.id)));};
 function candidates(ignoreRepeat){
   const f=S.filters,{pl,di}=recentSets(),noRep=f.noRepeat&&!ignoreRepeat;
+  if(f.mode==='cook')return cookDishes(noRep).map(d=>({kind:'dish',id:d.id,emoji:d.emoji||'🍽️',name:d.name}));
   if(f.target==='place'){
-    return S.places.filter(placeOk).filter(p=>!noRep||!pl.has(p.id))
+    const arr=S.places.filter(placeOk).filter(p=>!noRep||!pl.has(p.id))
       .map(p=>({kind:'place',id:p.id,emoji:p.emoji||'🏠',name:p.name}));
+    if(f.mode==='any'&&S.dishes.some(d=>d.cook))arr.push(Object.assign({},COOK_ITEM));
+    return arr;
   }
   const filtering=f.mode!=='any'||f.price.length<3;
   return S.dishes.filter(d=>{
@@ -336,11 +384,12 @@ function go(p){
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
   document.querySelectorAll('.page').forEach(s=>s.classList.toggle('active',s.id==='page-'+p));
   $('#fab').classList.toggle('show',p==='manage');
-  const subs={spin:'ให้แอปเลือกให้ ไม่ต้องเถียงกัน',manage:'ร้านและเมนูที่ชอบ',history:'กินอะไรไปแล้วบ้าง'};
+  const subs={spin:'ให้แอปเลือกให้ ไม่ต้องเถียงกัน',manage:'ร้านและเมนูที่ชอบ',history:'กินอะไรไปแล้วบ้าง',settings:'ปรับให้เข้ากับเราสองคน'};
   $('#subtitle').textContent=subs[p];
   if(p==='spin')renderSpin();
   if(p==='manage')renderManage();
   if(p==='history')renderHistory();
+  if(p==='settings')renderSettings();
   window.scrollTo(0,0);
 }
 
@@ -348,7 +397,7 @@ function go(p){
 function bindSeg(el,get,set){
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();renderSpin();});
 }
-bindSeg($('#segTarget'),null,v=>{S.filters.target=v;hideResult();});
+bindSeg($('#segTarget'),null,v=>{S.filters.target=v;if(v==='place'&&S.filters.mode==='cook')S.filters.mode='any';hideResult();});
 bindSeg($('#segDecide'),null,v=>{S.filters.decide=v;});
 $('#chipsMode').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.filters.mode=b.dataset.v;save();hideResult();renderSpin();});
 $('#chipsPrice').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
@@ -359,10 +408,12 @@ $('#chipsPrice').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
 });
 $('#swNoRepeat').onchange=e=>{S.filters.noRepeat=e.target.checked;save();hideResult();renderSpin();};
 
+const wheelPick=c=>{const n=S.settings.wheelN;return n&&c.length>n?shuffle(c).slice(0,n):shuffle(c);};
 let wheelItems=[],wheelRot=0,spinning=false,wheelLocked=null; // wheelLocked: custom item list (e.g. matches)
 function renderSpin(){
   const f=S.filters;
-  $('#segTarget').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===f.target));
+  $('#segTarget').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===tgt()));
+  $('#priceRow').style.display=f.mode==='cook'?'none':'';
   $('#segDecide').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===f.decide));
   $('#chipsMode').querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.v===f.mode));
   $('#chipsPrice').querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',f.price.includes(+b.dataset.v)));
@@ -373,21 +424,21 @@ function renderSpin(){
   const on=!!S.home;
   $('#btnSwipeRemote').style.display=on?'':'none';
   $('#btnSwipe').className=on?'btn ghost':'btn sec';
-  $('#swipeDesc').textContent=on
-    ?'เริ่มที่เครื่องไหนก็ได้ อีกเครื่องจะมีปุ่มชวนปัดเด้งขึ้นมา ปัดเสร็จทั้งคู่แล้วผลจะขึ้นพร้อมกัน ถ้าชอบตรงกันหลายอันวงล้อจะเลือกให้'
-    :'สุ่มมาไม่เกิน 8 ตัวเลือก คนแรกปัดเสร็จแล้วส่งมือถือให้อีกคน ถ้าชอบตรงกันหลายอันวงล้อจะเลือกให้ (เชื่อมบ้านในแท็บ "ประวัติ" เพื่อปัดคนละเครื่อง)';
+  const st=S.settings,how=st.swipeMode==='pick'?`ต่างคนต่างเลือกที่อยากกินคนละ ${st.pickN} อย่าง แล้วเอามารวมกันปัด`:`แอปสุ่มการ์ดมา${st.swipeN?' '+st.swipeN+' ใบ':'ทุกตัวเลือก'} แล้วต่างคนต่างปัด`;
+  $('#swipeDesc').textContent=how+(on?' — เริ่มที่เครื่องไหนก็ได้ อีกเครื่องจะมีแถบชวนเด้งขึ้นมา ผลขึ้นพร้อมกัน':' — ส่งมือถือให้กันเล่น (เชื่อมบ้านในแท็บ "ตั้งค่า" เพื่อเล่นคนละเครื่อง)')+' · เปลี่ยนวิธีได้ในแท็บ "ตั้งค่า"';
   renderInvite();
   if(!spinning){
     const c=candidates();
     let msg;
-    if(f.target==='place'&&S.places.length===0)msg='ยังไม่มีร้าน — ไปเพิ่มที่แท็บ "ร้าน & เมนู" ก่อนนะ';
+    if(tgt()==='place'&&S.places.length===0&&c.length===0)msg='ยังไม่มีร้าน — ไปเพิ่มที่แท็บ "ร้าน & เมนู" ก่อนนะ';
+    else if(f.mode==='cook'&&!S.dishes.some(d=>d.cook))msg='ยังไม่มีเมนูที่ติดป้าย "ทำเองได้" — ไปติ๊กในแท็บ "ร้าน & เมนู" ก่อนนะ';
     else if(c.length===0)msg='ไม่มีตัวเลือกที่ตรงเงื่อนไข ลองปิด "ไม่เอาที่เพิ่งกิน" หรือเพิ่มช่วงราคาดู';
-    else msg=`มี ${c.length} ตัวเลือกที่ตรงเงื่อนไข`+(c.length>12?' (วงล้อสุ่มมาแสดง 12)':'');
+    else{const wn=S.settings.wheelN;msg=`มี ${c.length} ตัวเลือกที่ตรงเงื่อนไข`+(wn&&c.length>wn?` (วงล้อสุ่มมาแสดง ${wn})`:'');}
     $('#candCount').textContent=msg;
     $('#candCount2').textContent=msg;
     $('#btnSpin').disabled=c.length===0;
     $('#btnSwipe').disabled=c.length===0;$('#btnSwipeRemote').disabled=c.length===0;
-    if(!wheelLocked){wheelItems=c.length>12?shuffle(c).slice(0,12):shuffle(c);}
+    if(!wheelLocked){wheelItems=wheelPick(c);}
     drawWheel();
   }
 }
@@ -445,7 +496,7 @@ function spinWheel(onDone,forced){
   requestAnimationFrame(frame);
 }
 $('#btnSpin').onclick=()=>{
-  if(!wheelLocked){const c=candidates();wheelItems=c.length>12?shuffle(c).slice(0,12):shuffle(c);drawWheel();}
+  if(!wheelLocked){wheelItems=wheelPick(candidates());drawWheel();}
   spinWheel();
 };
 document.querySelector('.hub').onclick=()=>$('#btnSpin').click();
@@ -458,7 +509,34 @@ function showResult(item,opts){
   let html='';
   if(item.kind==='place'&&!placeById(item.id)){rc.style.display='none';toast('ร้านนี้ถูกลบไปแล้ว');return;}
   if(item.kind==='dish'&&!dishById(item.id)){rc.style.display='none';toast('เมนูนี้ถูกลบไปแล้ว');return;}
-  if(item.kind==='place'){
+  const cookView=item.kind==='dish'&&((opts&&opts.cook)||S.filters.mode==='cook');
+  if(item.kind==='cook'){
+    const cd=cookDishes(S.filters.noRepeat);
+    html=`<div class="muted" style="font-size:14px">เย็นนี้…</div>
+      <div class="emo">🍳</div><div class="name">ทำกินเองที่บ้าน</div>
+      <div class="muted" style="font-size:14px;margin-bottom:12px">ประหยัดด้วย จะทำเมนูอะไรดี?</div>
+      ${cd.length?`<button class="btn sec" id="rCook" style="margin-bottom:10px">🎡 สุ่มเมนูที่ทำเองได้ (${cd.length})</button>`:''}
+      <div class="btns2"><button class="btn ghost" id="rAgain">🔄 สุ่มใหม่</button><button class="btn pri" id="rOk">✅ ทำเองนี่แหละ</button></div>`;
+    rc.innerHTML=html;
+    $('#rOk').onclick=()=>logEat({cook:true},hid);
+    if(cd.length)$('#rCook').onclick=()=>{
+      wheelItems=wheelPick(cd).map(d=>({kind:'dish',id:d.id,emoji:d.emoji||'🍽️',name:d.name}));
+      wheelLocked=true;S.filters.decide='wheel';
+      $('#wheelArea').style.display='';$('#swipeArea').style.display='none';
+      $('#segDecide').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v==='wheel'));
+      drawWheel();window.scrollTo({top:0,behavior:'smooth'});
+      setTimeout(()=>spinWheel(it=>{wheelLocked=true;showResult(it,{cook:true,sid:opts&&opts.sid});}),350);
+    };
+  }else if(cookView){
+    const d=dishById(item.id);
+    html=`<div class="muted" style="font-size:14px">เย็นนี้ทำ…</div>
+      <div class="emo">${esc(d.emoji||'🍽️')}</div><div class="name">${esc(d.name)}</div>
+      <div class="tags"><span class="tag o">🍳 ทำกินเอง</span></div>
+      ${d.recipe?`<div class="plist" style="font-size:14px;white-space:pre-wrap;background:#FAF6F0;border-radius:12px;padding:10px 12px">📝 ${linkify(d.recipe)}</div>`:''}
+      <div class="btns2"><button class="btn ghost" id="rAgain">🔄 สุ่มใหม่</button><button class="btn pri" id="rOk">✅ ทำอันนี้</button></div>`;
+    rc.innerHTML=html;
+    $('#rOk').onclick=()=>logEat({dishId:d.id,cook:true},hid);
+  }else if(item.kind==='place'){
     const p=placeById(item.id);
     const ds=(p.dishIds||[]).map(dishById).filter(Boolean);
     html=`<div class="muted" style="font-size:14px">เย็นนี้ไปกินที่…</div>
@@ -472,11 +550,13 @@ function showResult(item,opts){
   }else{
     const d=dishById(item.id);
     const ps=placesForDish(d.id).filter(placeOk);
+    const canCook=d.cook&&S.filters.mode==='any';
     html=`<div class="muted" style="font-size:14px">เย็นนี้กิน…</div>
       <div class="emo">${esc(d.emoji||'🍽️')}</div><div class="name">${esc(d.name)}</div>`;
-    if(ps.length){
-      html+=`<div class="plist"><div class="muted" style="font-size:13px;margin:6px 2px">ร้านที่มีเมนูนี้ (แตะเพื่อเลือก)</div>
+    if(ps.length||canCook){
+      html+=`<div class="plist"><div class="muted" style="font-size:13px;margin:6px 2px">กินที่ไหนดี (แตะเพื่อเลือก)</div>
         ${ps.map(p=>`<button class="pitem" style="width:100%" data-pid="${p.id}"><span><b>${esc(p.name)}</b></span><span>${placeTags(p)}</span></button>`).join('')}
+        ${canCook?`<button class="pitem" style="width:100%" id="rCookIt"><span><b>🍳 ทำกินเองที่บ้าน</b></span><span class="tag o">ทำเอง</span></button>`:''}
         ${ps.length>1?`<button class="btn ghost small" id="rSpinPlace" style="width:100%">🎡 สุ่มร้านจากเมนูนี้</button>`:''}</div>`;
     }else{
       html+=`<div class="muted" style="font-size:14px;margin:6px 0 12px">ยังไม่ได้ผูกร้านกับเมนูนี้ — เลือกร้านเองได้เลย หรือไปเพิ่มร้านในแท็บ "ร้าน & เมนู"</div>`;
@@ -484,7 +564,8 @@ function showResult(item,opts){
     html+=`<div class="btns2"><button class="btn ghost" id="rAgain">🔄 สุ่มใหม่</button><button class="btn pri" id="rOk">✅ กินอันนี้</button></div>`;
     rc.innerHTML=html;
     $('#rOk').onclick=()=>logEat({dishId:d.id},hid);
-    rc.querySelectorAll('.pitem').forEach(b=>b.onclick=()=>logEat({dishId:d.id,placeId:b.dataset.pid},hid));
+    rc.querySelectorAll('.pitem[data-pid]').forEach(b=>b.onclick=()=>logEat({dishId:d.id,placeId:b.dataset.pid},hid));
+    const ck=$('#rCookIt');if(ck)ck.onclick=()=>showResult(item,Object.assign({},opts,{cook:true}));
     const sp=$('#rSpinPlace');
     if(sp)sp.onclick=()=>{
       wheelItems=shuffle(ps).map(p=>({kind:'place',id:p.id,emoji:p.emoji||'🏠',name:p.name}));
@@ -520,38 +601,76 @@ function logEat(o,hid){
 
 /* ================= swipe match ================= */
 let SW=null;
+const slim=({kind,id,emoji,name})=>({kind,id,emoji,name});
+const ikey=it=>it.kind+':'+it.id;
+function seeded(seed){let h=2166136261;for(const ch of String(seed)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0;}
+  return()=>{h=(h+0x6D2B79F5)>>>0;let t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+function sshuffle(a,seed){const r=seeded(seed);a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function swipeItems(c){const n=S.settings.swipeN;return (n&&c.length>n?shuffle(c).slice(0,n):shuffle(c)).map(slim);}
+function unionPicks(pool,lists){const k=new Set();lists.forEach(l=>(l||[]).forEach(x=>k.add(x)));return pool.filter(i=>k.has(ikey(i)));}
 $('#btnSwipe').onclick=startSwipe;
-$('#ovClose').onclick=()=>{$('#overlay').classList.remove('show');SW=null;};
+$('#ovClose').onclick=()=>{$('#overlay').classList.remove('show');SW=null;renderInvite();};
+function newSW(o){return Object.assign({player:0,idx:0,likes:[new Set(),new Set()],picks:[new Set(),new Set()]},o);}
 function startSwipe(){
   const c=candidates();
   if(!c.length){toast('ไม่มีตัวเลือกที่ตรงเงื่อนไข');return;}
-  SW={mode:'local',items:shuffle(c).slice(0,8),player:0,idx:0,likes:[new Set(),new Set()]};
+  SW=S.settings.swipeMode==='pick'
+    ?newSW({mode:'local',stage:'pick',pool:c.map(slim),pickN:S.settings.pickN})
+    :newSW({mode:'local',stage:'swipe',items:swipeItems(c)});
   $('#overlay').classList.add('show');
   handoff();
 }
 function pname(i){if(SW&&SW.mode==='remote')return S.myName||'คุณ';return i===0?S.settings.p1:S.settings.p2;}
+function ovScreen(emo,title,text,btn,cls,fn){
+  $('#ovBody').innerHTML=`<div class="big-emo">${emo}</div><div class="ov-title">${title}</div><div class="ov-text">${text}</div>
+    <button class="btn ${cls||'pri'}" style="max-width:300px" id="ovGo">${btn}</button>`;
+  $('#ovGo').onclick=fn;
+}
 function handoff(){
-  const p=SW.player;
-  $('#ovWho').textContent='';
+  const p=SW.player;$('#ovWho').textContent='';
+  const swipeHow='ปัดขวา/กด ❤️ ถ้าอยากกิน ปัดซ้าย/กด ✖️ ถ้าไม่เอา';
+  const go=()=>{SW.idx=0;showCard();};
   if(SW.mode==='remote'){
-    $('#ovBody').innerHTML=`<div class="big-emo">📱</div>
-      <div class="ov-title">ปัดในเครื่องของ ${esc(pname(0))}</div>
-      <div class="ov-text">ปัดขวา/กด ❤️ ถ้าอยากกิน ปัดซ้าย/กด ✖️ ถ้าไม่เอา<br>อีกคนปัดในเครื่องตัวเอง ผลจะขึ้นเมื่อปัดเสร็จทั้งคู่<br>มีทั้งหมด ${SW.items.length} ตัวเลือก</div>
-      <button class="btn pri" style="max-width:300px" id="ovGo">เริ่มปัด</button>`;
-    $('#ovGo').onclick=()=>{SW.idx=0;showCard();};
-    return;
+    if(SW.stage==='pick')return ovScreen('✋',`${esc(pname(0))} อยากกินอะไร?`,`เลือกที่อยากกินได้ไม่เกิน ${SW.pickN} อย่าง<br>อีกคนเลือกในเครื่องตัวเอง แล้วค่อยเอามารวมกันปัด`,'เริ่มเลือก','pri',showPick);
+    return ovScreen('📱',`ปัดในเครื่องของ ${esc(pname(0))}`,`${swipeHow}<br>อีกคนปัดในเครื่องตัวเอง ผลจะขึ้นเมื่อปัดเสร็จทั้งคู่<br>มีทั้งหมด ${SW.items.length} ตัวเลือก`,'เริ่มปัด','pri',go);
   }
-  $('#ovBody').innerHTML=`<div class="big-emo">${p===0?'👋':'🙈'}</div>
-    <div class="ov-title">ตาของ ${esc(pname(p))}</div>
-    <div class="ov-text">${p===0?`ปัดขวา/กด ❤️ ถ้าอยากกิน ปัดซ้าย/กด ✖️ ถ้าไม่เอา<br>มีทั้งหมด ${SW.items.length} ตัวเลือก`:`ส่งมือถือให้ ${esc(pname(1))} ได้เลย<br>(${esc(pname(0))} ห้ามแอบดูนะ)`}</div>
-    <button class="btn ${p===0?'pri':'sec'}" style="max-width:300px" id="ovGo">เริ่มปัด</button>`;
-  $('#ovGo').onclick=()=>{SW.idx=0;showCard();};
+  if(SW.stage==='pick'){
+    if(p===0)return ovScreen('✋',`${esc(pname(0))} เลือกก่อน`,`เลือกที่อยากกินได้ไม่เกิน ${SW.pickN} อย่าง<br>แล้วส่งให้ ${esc(pname(1))} เลือกต่อ จากนั้นค่อยมาปัดรวมกัน`,'เริ่มเลือก','pri',showPick);
+    return ovScreen('🙈',`ตาของ ${esc(pname(1))} เลือก`,`ส่งมือถือให้ ${esc(pname(1))} ได้เลย<br>(${esc(pname(0))} ห้ามแอบดูนะ)`,'เริ่มเลือก','sec',showPick);
+  }
+  if(p===0)return ovScreen('👋',`ตาของ ${esc(pname(0))} ปัด`,`${swipeHow}<br>มีทั้งหมด ${SW.items.length} ตัวเลือก`,'เริ่มปัด','pri',go);
+  ovScreen('🙈',`ตาของ ${esc(pname(1))} ปัด`,`ส่งมือถือให้ ${esc(pname(1))} ได้เลย<br>(${esc(pname(0))} ห้ามแอบดูนะ)`,'เริ่มปัด','sec',go);
+}
+function showPick(){
+  const sel=SW.picks[SW.player],N=SW.pickN;
+  const upd=()=>{$('#ovWho').textContent=`${pname(SW.player)} · เลือกแล้ว ${sel.size}/${N}`;
+    const b=$('#pickDone');b.disabled=sel.size===0;b.textContent=sel.size?`ต่อไป (${sel.size}/${N})`:`เลือกอย่างน้อย 1 อย่าง`;};
+  $('#ovBody').innerHTML=`<div class="ov-title" style="font-size:20px">อยากกินอะไร? เลือกได้ ${N} อย่าง</div>
+    <div class="chips" id="pickGrid" style="justify-content:center;max-height:56vh;overflow:auto;padding:4px;margin-bottom:14px">
+      ${SW.pool.map(i=>`<button class="chip" data-k="${esc(ikey(i))}" style="font-size:15px;padding:9px 14px">${esc(i.emoji+' '+i.name)}</button>`).join('')}</div>
+    <button class="btn pri" style="max-width:300px" id="pickDone"></button>`;
+  $('#pickGrid').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k;
+    if(sel.has(k))sel.delete(k);
+    else{if(sel.size>=N){toast(`เลือกได้ ${N} อย่างนะ`);return;}sel.add(k);}
+    b.classList.toggle('on',sel.has(k));upd();
+  });
+  $('#pickDone').onclick=()=>{
+    if(!sel.size)return;
+    if(SW.mode==='remote')return finishRemotePick();
+    if(SW.player===0){SW.player=1;handoff();return;}
+    SW.items=shuffle(unionPicks(SW.pool,SW.picks.map(s=>[...s])));
+    SW.stage='swipe';SW.player=0;SW.idx=0;
+    toast(`รวมได้ ${SW.items.length} ตัวเลือก มาปัดกัน!`);handoff();
+  };
+  upd();
 }
 function showCard(){
   const it=SW.items[SW.idx];
   $('#ovWho').textContent=`${pname(SW.player)} · ${SW.idx+1}/${SW.items.length}`;
   let sub='';
-  if(it.kind==='place'){const p=placeById(it.id);sub=`<div class="tags" style="margin-top:10px">${placeTags(p)}</div>`;}
+  if(it.kind==='place'){const p=placeById(it.id);if(p)sub=`<div class="tags" style="margin-top:10px">${placeTags(p)}</div>`;}
+  if(it.kind==='dish'&&S.filters.mode==='cook')sub=`<div class="tags" style="margin-top:10px"><span class="tag o">🍳 ทำกินเอง</span></div>`;
   $('#ovBody').innerHTML=`<div class="stack"><div class="scard" id="scard">
       <div class="stamp like">อยาก!</div><div class="stamp nope">ไม่เอา</div>
       <div class="emo">${esc(it.emoji)}</div><div class="name">${esc(it.name)}</div>${sub}</div></div>
@@ -573,7 +692,7 @@ function showCard(){
 function decide(yes){
   if(!SW||SW.busy||!$('#scard'))return;SW.busy=true;
   const card=$('#scard'),it=SW.items[SW.idx];
-  if(yes)SW.likes[SW.player].add(it.kind+':'+it.id);
+  if(yes)SW.likes[SW.player].add(ikey(it));
   card.style.transition='transform .28s ease-in, opacity .28s';
   card.style.transform=`translateX(${yes?420:-420}px) rotate(${yes?22:-22}deg)`;card.style.opacity=0;
   card.querySelector(yes?'.like':'.nope').style.opacity=1;
@@ -584,29 +703,27 @@ function decide(yes){
     else finishSwipe();},280);
 }
 function finishSwipe(){
-  const key=it=>it.kind+':'+it.id;
-  const both=SW.items.filter(it=>SW.likes[0].has(key(it))&&SW.likes[1].has(key(it)));
-  const either=SW.items.filter(it=>SW.likes[0].has(key(it))||SW.likes[1].has(key(it)));
+  const both=SW.items.filter(it=>SW.likes[0].has(ikey(it))&&SW.likes[1].has(ikey(it)));
+  const either=SW.items.filter(it=>SW.likes[0].has(ikey(it))||SW.likes[1].has(ikey(it)));
   $('#ovWho').textContent='ผลลัพธ์';
   if(both.length===1){
-    $('#overlay').classList.remove('show');
+    $('#overlay').classList.remove('show');SW=null;
     toast('ชอบตรงกันพอดี 1 อัน! 💞');showResult(both[0]);return;
   }
-  if(both.length>1){
-    $('#ovBody').innerHTML=`<div class="big-emo">💞</div><div class="ov-title">ชอบตรงกัน ${both.length} อัน</div>
-      <div class="ov-text">${both.map(i=>esc(i.emoji+' '+i.name)).join('<br>')}</div>
-      <button class="btn pri" style="max-width:300px" id="ovGo">🎡 ให้วงล้อตัดสิน</button>`;
-    $('#ovGo').onclick=()=>spinFrom(both);return;
-  }
+  if(both.length>1)return ovScreen('💞',`ชอบตรงกัน ${both.length} อัน`,both.map(i=>esc(i.emoji+' '+i.name)).join('<br>'),'🎡 ให้วงล้อตัดสิน','pri',()=>spinFrom(both));
+  noMatchScreen(either,startSwipe,false);
+}
+function noMatchScreen(either,retry,remote){
+  $('#ovWho').textContent='ผลลัพธ์';
   $('#ovBody').innerHTML=`<div class="big-emo">😅</div><div class="ov-title">ไม่ตรงกันเลย</div>
-    <div class="ov-text">${either.length?`มีที่คนใดคนหนึ่งอยากกิน ${either.length} อัน`:'ไม่มีใครอยากกินอะไรเลย 555'}</div>
+    <div class="ov-text">${either.length?`มีที่คนใดคนหนึ่งอยากกิน ${either.length} อัน${remote?'<br>(สุ่มในเครื่องเดียวพอนะ)':''}`:'ไม่มีใครอยากกินอะไรเลย 555'}</div>
     ${either.length?`<button class="btn pri" style="max-width:300px;margin-bottom:10px" id="ovEither">🎡 สุ่มจากที่ใครก็ได้ชอบ</button>`:''}
-    <button class="btn ghost" style="max-width:300px" id="ovRetry">🔄 ปัดชุดใหม่</button>`;
+    <button class="btn ghost" style="max-width:300px" id="ovRetry">🔄 เริ่มรอบใหม่</button>`;
   if(either.length)$('#ovEither').onclick=()=>spinFrom(either);
-  $('#ovRetry').onclick=startSwipe;
+  $('#ovRetry').onclick=retry;
 }
 function spinFrom(list){
-  $('#overlay').classList.remove('show');
+  $('#overlay').classList.remove('show');SW=null;
   S.filters.decide='wheel';save();renderSpin();
   wheelItems=shuffle(list);wheelLocked=true;drawWheel();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -615,37 +732,54 @@ function spinFrom(list){
 
 /* ================= swipe on two phones ================= */
 let SESSION=null;
-const ikey=it=>it.kind+':'+it.id;
 $('#btnSwipeRemote').onclick=startRemoteSwipe;
+function needNick(){if(S.myName)return true;toast('ตั้งชื่อเล่นในแท็บ "ตั้งค่า" ก่อนนะ');go('settings');return false;}
 function startRemoteSwipe(){
   if(!synced()){toast('ยังไม่ได้เชื่อมบ้าน');return;}
-  if(!S.myName){toast('ตั้งชื่อเล่นในแท็บ "ประวัติ" ก่อนนะ');go('history');return;}
+  if(!needNick())return;
   const c=candidates();
   if(!c.length){toast('ไม่มีตัวเลือกที่ตรงเงื่อนไข');return;}
-  const items=shuffle(c).slice(0,8).map(({kind,id,emoji,name})=>({kind,id,emoji,name}));
-  const s={id:uid(),items,createdAt:Date.now(),by:Cloud.uid,byName:S.myName,players:{},result:null};
+  const s={id:uid(),createdAt:Date.now(),by:Cloud.uid,byName:S.myName,players:{},result:null};
+  if(S.settings.swipeMode==='pick')Object.assign(s,{mode:'pick',pickN:S.settings.pickN,pool:c.slice(0,60).map(slim),items:null});
+  else Object.assign(s,{mode:'random',items:swipeItems(c)});
   Cloud.setSession(s);SESSION=s;
-  beginRemoteSwipe();
+  s.mode==='pick'?beginRemotePick():beginRemoteSwipe();
 }
-function beginRemoteSwipe(){
-  if(!SESSION)return;
-  SW={mode:'remote',sid:SESSION.id,items:SESSION.items.slice(),player:0,idx:0,likes:[new Set(),new Set()]};
+function beginRemotePick(){
+  if(!SESSION||!SESSION.pool)return;
+  SW=newSW({mode:'remote',stage:'pick',sid:SESSION.id,pool:SESSION.pool,pickN:SESSION.pickN||3});
   $('#overlay').classList.add('show');handoff();
 }
+function beginRemoteSwipe(){
+  if(!SESSION||!SESSION.items)return;
+  SW=newSW({mode:'remote',stage:'swipe',sid:SESSION.id,items:SESSION.items.slice()});
+  $('#overlay').classList.add('show');handoff();
+}
+const myPlayer=()=>((SESSION&&SESSION.players)||{})[Cloud.uid]||null;
 function otherName(s){
   const o=Object.entries((s&&s.players)||{}).find(([k])=>k!==Cloud.uid);
   if(o)return o[1].name;
   return s&&s.by!==Cloud.uid?s.byName:'แฟน';
 }
-function finishRemote(){
-  const me={name:S.myName,likes:[...SW.likes[0]],done:true,at:Date.now()};
+function setMe(me){
   Cloud.updatePlayer(Cloud.uid,me);
-  if(SESSION&&SESSION.id===SW.sid){SESSION.players=Object.assign({},SESSION.players,{[Cloud.uid]:me});}
-  $('#ovWho').textContent='ปัดเสร็จแล้ว';
-  $('#ovBody').innerHTML=`<div class="wait">⏳</div><div class="ov-title">รอ ${esc(otherName(SESSION))} ปัดอยู่…</div>
-    <div class="ov-text">ปิดหน้านี้ได้เลย พอปัดเสร็จทั้งคู่ ผลจะเด้งขึ้นมาเอง</div>
+  if(SESSION&&SW&&SESSION.id===SW.sid)SESSION.players=Object.assign({},SESSION.players,{[Cloud.uid]:me});
+}
+function waitScreen(title,text){
+  $('#ovBody').innerHTML=`<div class="wait">⏳</div><div class="ov-title">${title}</div><div class="ov-text">${text}</div>
     <button class="btn ghost" style="max-width:300px" id="ovGo">ปิด</button>`;
   $('#ovGo').onclick=()=>{$('#overlay').classList.remove('show');SW=null;renderInvite();};
+}
+function finishRemotePick(){
+  setMe(Object.assign({},myPlayer(),{name:S.myName,picks:[...SW.picks[0]],picked:true}));
+  SW.stage='waitPick';$('#ovWho').textContent='เลือกเสร็จแล้ว';
+  waitScreen(`รอ ${esc(otherName(SESSION))} เลือกอยู่…`,'พอเลือกเสร็จทั้งคู่ จะเริ่มปัดให้เอง<br>ปิดหน้านี้ก็ได้ จะมีแถบเตือนตอนถึงตาปัด');
+  checkSession();
+}
+function finishRemote(){
+  setMe(Object.assign({},myPlayer(),{name:S.myName,likes:[...SW.likes[0]],done:true,at:Date.now()}));
+  $('#ovWho').textContent='ปัดเสร็จแล้ว';
+  waitScreen(`รอ ${esc(otherName(SESSION))} ปัดอยู่…`,'ปิดหน้านี้ได้เลย พอปัดเสร็จทั้งคู่ ผลจะเด้งขึ้นมาเอง');
   checkSession();
 }
 function computeResult(s){
@@ -654,18 +788,26 @@ function computeResult(s){
   const matches=[...A].filter(k=>B.has(k)).sort();
   const either=[...new Set([...A,...B])].sort();
   // สุ่มแบบกำหนดจากรหัสรอบ: ไม่ว่าเครื่องไหนคำนวณก็ได้ผลเดียวกัน
-  let h=2166136261;for(const ch of s.id){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0;}
-  return {matches,either,winner:matches.length?matches[h%matches.length]:null};
+  return {matches,either,winner:matches.length?matches[Math.floor(seeded(s.id)()*matches.length)]:null};
 }
 function checkSession(){
   const s=SESSION;if(!s||!synced())return;
-  const ps=s.players||{};
+  const ps=s.players||{},me=ps[Cloud.uid];
+  if(s.mode==='pick'&&!s.items){
+    const picked=Object.values(ps).filter(p=>p.picked);
+    if(picked.length>=2)Cloud.setIfAbsent('items',sshuffle(unionPicks(s.pool,picked.slice(0,2).map(p=>p.picks)),s.id));
+    renderInvite();return;
+  }
+  if(s.mode==='pick'&&s.items&&me&&me.picked&&!me.done&&SW&&SW.sid===s.id&&SW.stage==='waitPick'){
+    toast(`เลือกครบแล้ว รวมได้ ${s.items.length} ตัวเลือก มาปัดกัน!`);beginRemoteSwipe();
+  }
   const doneN=Object.values(ps).filter(p=>p.done).length;
-  if(doneN>=2&&!s.result)Cloud.setResultIfAbsent(computeResult(s));
-  if(s.result&&ps[Cloud.uid]&&ps[Cloud.uid].done&&!S.seen.includes(s.id)){
+  if(doneN>=2&&!s.result)Cloud.setIfAbsent('result',computeResult(s));
+  if(s.result&&me&&me.done&&!S.seen.includes(s.id)){
     S.seen=[...S.seen,s.id].slice(-20);save();
     presentRemoteResult(s);
   }
+  renderInvite();
 }
 function presentRemoteResult(s){
   $('#overlay').classList.remove('show');SW=null;
@@ -683,27 +825,26 @@ function presentRemoteResult(s){
     }else{toast('ชอบตรงกันพอดี 1 อัน! 💞');showResult(find(r.winner),{sid:s.id});}
     return;
   }
-  const either=(r.either||[]).map(find).filter(Boolean);
-  $('#overlay').classList.add('show');$('#ovWho').textContent='ผลลัพธ์';
-  $('#ovBody').innerHTML=`<div class="big-emo">😅</div><div class="ov-title">ไม่ตรงกันเลย</div>
-    <div class="ov-text">${either.length?`มีที่คนใดคนหนึ่งอยากกิน ${either.length} อัน<br>(สุ่มในเครื่องเดียวพอนะ)`:'ไม่มีใครอยากกินอะไรเลย 555'}</div>
-    ${either.length?`<button class="btn pri" style="max-width:300px;margin-bottom:10px" id="ovEither">🎡 สุ่มจากที่ใครก็ได้ชอบ</button>`:''}
-    <button class="btn ghost" style="max-width:300px" id="ovRetry">🔄 ปัดชุดใหม่</button>`;
-  if(either.length)$('#ovEither').onclick=()=>spinFrom(either);
-  $('#ovRetry').onclick=startRemoteSwipe;
+  $('#overlay').classList.add('show');
+  noMatchScreen((r.either||[]).map(find).filter(Boolean),startRemoteSwipe,true);
 }
 function renderInvite(){
   const b=$('#inviteBanner'),s=SESSION;
-  if(!synced()||!s||s.result||Date.now()-s.createdAt>3*3600e3||(SW&&SW.mode==='remote')){b.style.display='none';return;}
-  const me=(s.players||{})[Cloud.uid];
+  if(!synced()||!s||s.result||Date.now()-s.createdAt>3*3600e3||$('#overlay').classList.contains('show')){b.style.display='none';return;}
+  const me=(s.players||{})[Cloud.uid],other=esc(otherName(s));
+  let txt,btn=null,fn=null;
+  if(s.mode==='pick'&&!s.items){
+    if(me&&me.picked)txt=`⏳ เลือกแล้ว รอ <b>${other}</b> เลือกอยู่…`;
+    else{txt=s.by===Cloud.uid?`✋ คุณยังเลือกไม่เสร็จ (คนละ ${s.pickN} อย่าง)`:`✋ <b>${esc(s.byName)}</b> ชวนเลือกเมนู (คนละ ${s.pickN} อย่าง)`;btn='เลือกเลย';fn=beginRemotePick;}
+  }else if(me&&me.done)txt=`⏳ ปัดเสร็จแล้ว รอ <b>${other}</b> ปัดอยู่…`;
+  else{
+    txt=s.mode==='pick'?`💞 เลือกครบแล้ว มาปัดกัน (${s.items.length} ตัวเลือก)`
+      :s.by===Cloud.uid?`💞 ปัดของคุณยังไม่เสร็จ (${s.items.length} ตัวเลือก)`:`💞 <b>${esc(s.byName)}</b> ชวนปัดเลือกกิน (${s.items.length} ตัวเลือก)`;
+    btn='ปัดเลย';fn=beginRemoteSwipe;
+  }
   b.style.display='flex';
-  if(me&&me.done){b.innerHTML=`<div class="txt">⏳ ปัดเสร็จแล้ว รอ <b>${esc(otherName(s))}</b> ปัดอยู่…</div>`;return;}
-  const txt=s.by===Cloud.uid?`💞 ปัดของคุณยังไม่เสร็จ (${s.items.length} ตัวเลือก)`:`💞 <b>${esc(s.byName)}</b> ชวนปัดเลือกกิน (${s.items.length} ตัวเลือก)`;
-  b.innerHTML=`<div class="txt">${txt}</div><button class="btn pri small" id="btnJoinSwipe">ปัดเลย</button>`;
-  $('#btnJoinSwipe').onclick=()=>{
-    if(!S.myName){toast('ตั้งชื่อเล่นในแท็บ "ประวัติ" ก่อนนะ');go('history');return;}
-    beginRemoteSwipe();
-  };
+  b.innerHTML=`<div class="txt">${txt}</div>${btn?`<button class="btn pri small" id="btnJoinSwipe">${btn}</button>`:''}`;
+  if(btn)$('#btnJoinSwipe').onclick=()=>{if(needNick())fn();};
 }
 
 /* ================= sync with Cloud ================= */
@@ -714,6 +855,7 @@ addEventListener('offline',()=>{netOk=false;renderSync();});
 function rerender(){
   if(curPage==='spin'){if(!spinning)renderSpin();}
   else if(curPage==='manage')renderManage();
+  else if(curPage==='settings')renderSettings();
   else renderHistory();
 }
 window.App={
@@ -732,6 +874,7 @@ window.App={
       toast('เข้าบ้านเรียบร้อย ข้อมูลตรงกันแล้ว 🏠');renderSync();rerender();return;
     }
     if(!S.home)return;
+    if(col==='dishes'&&MIG.size){arr.forEach(d=>{if(MIG.has(d.id)&&d.cook===undefined){d.cook=true;Cloud.put('dishes',d.id,d);}});MIG.clear();}
     S[col]=col==='history'?arr:byTs(arr);
     save();rerender();
   },
@@ -791,7 +934,7 @@ function leaveHome(){
   if(window.Cloud)Cloud.stop();S.home=null;SESSION=null;save();renderSync();rerender();
 }
 async function shareCode(){
-  const txt=`มาใช้แอป "กินไรดี" ด้วยกัน 🍽️\nเปิดแอป → แท็บประวัติ → "มีรหัสแล้ว" แล้วกรอกรหัสบ้าน: ${fmtCode(S.home)}`;
+  const txt=`มาใช้แอป "กินไรดี" ด้วยกัน 🍽️\nเปิดแอป → แท็บตั้งค่า → "มีรหัสแล้ว" แล้วกรอกรหัสบ้าน: ${fmtCode(S.home)}`;
   try{if(navigator.share){await navigator.share({text:txt});return;}}catch(e){if(e.name==='AbortError')return;}
   try{await navigator.clipboard.writeText(fmtCode(S.home));toast('คัดลอกรหัสแล้ว');}catch(e){toast('รหัสบ้าน: '+fmtCode(S.home));}
 }
@@ -841,7 +984,7 @@ function renderManage(){
     box.innerHTML=S.dishes.length?S.dishes.map(d=>{
       const n=placesForDish(d.id).length;
       return `<div class="item" data-id="${d.id}"><div class="emo">${esc(d.emoji||'🍽️')}</div>
-        <div class="info"><div class="t">${esc(d.name)}</div><div class="s">${n?`มี ${n} ร้าน`:'ยังไม่ได้ผูกร้าน'}</div></div>
+        <div class="info"><div class="t">${esc(d.name)}</div><div class="s">${d.cook?'🍳 ทำเองได้ · ':''}${n?`มี ${n} ร้าน`:'ยังไม่ได้ผูกร้าน'}</div></div>
         <button class="edit">แก้ไข</button></div>`;}).join(''):`<div class="empty">ยังไม่มีเมนู กด + เพื่อเพิ่ม</div>`;
     $('#manageHint').textContent='ลบเมนูที่ไม่กินออกได้ จะได้ไม่สุ่มโดน';
     box.querySelectorAll('.item').forEach(el=>el.onclick=()=>editDish(el.dataset.id));
@@ -883,20 +1026,25 @@ function editPlace(id){
     delItem('places',id);closeModal();renderManage();};
 }
 function editDish(id){
-  const d=id?Object.assign({},dishById(id)):{name:'',emoji:'🍽️'};
+  const d=id?Object.assign({},dishById(id)):{name:'',emoji:'🍽️',cook:false};
   const linked=id?placesForDish(id).map(p=>p.id):[];
   openModal(`<h2>${id?'แก้ไขเมนู':'เพิ่มเมนู'}</h2>
     <div class="label">อีโมจิ และ ชื่อเมนู</div>
     <div class="btns2"><input class="field" id="fEmo" style="flex:0 0 64px;text-align:center" maxlength="4" value="${esc(d.emoji)}"><input class="field" id="fName" placeholder="เช่น ข้าวซอย" maxlength="30" value="${esc(d.name)}"></div>
+    <div class="label">ทำกินเองได้ไหม</div>
+    <div class="chips"><button class="chip ${d.cook?'on':''}" id="fCook">🍳 ทำเองได้</button></div>
+    <div id="fRecipeBox" style="${d.cook?'':'display:none'}"><div class="label">สูตร / วัตถุดิบ / ลิงก์คลิป (ไม่ใส่ก็ได้)</div>
+    <textarea class="field" id="fRecipe" rows="3" maxlength="500" placeholder="เช่น หมูสับ ใบกะเพรา พริก กระเทียม&#10;หรือวางลิงก์ YouTube">${esc(d.recipe||'')}</textarea></div>
     ${S.places.length?`<div class="label">ร้านที่มีเมนูนี้</div>
     <div class="chips" id="fPlaces">${S.places.map(p=>`<button class="chip ${linked.includes(p.id)?'on':''}" data-id="${p.id}">${esc(p.name)}</button>`).join('')}</div>`:''}
     <div class="btns2 mt">${id?`<button class="btn ghost" id="fDelBtn" style="color:var(--danger);flex:0 0 90px">ลบ</button>`:''}<button class="btn ghost" id="fCancel">ยกเลิก</button><button class="btn pri" id="fSave">บันทึก</button></div>`);
   let sel=new Set(linked);
+  $('#fCook').onclick=e=>{d.cook=!d.cook;e.target.classList.toggle('on',d.cook);$('#fRecipeBox').style.display=d.cook?'':'none';};
   const fp=$('#fPlaces');
   if(fp)fp.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const i=b.dataset.id;sel.has(i)?sel.delete(i):sel.add(i);b.classList.toggle('on');});
   $('#fCancel').onclick=closeModal;
   $('#fSave').onclick=()=>{
-    d.name=$('#fName').value.trim();d.emoji=$('#fEmo').value.trim()||'🍽️';
+    d.name=$('#fName').value.trim();d.emoji=$('#fEmo').value.trim()||'🍽️';d.recipe=$('#fRecipe').value.trim();
     if(!d.name){toast('ใส่ชื่อเมนูก่อนนะ');return;}
     if(!id){d.id=uid();d.ts=Date.now();}
     putItem('dishes',d);
@@ -927,21 +1075,33 @@ function renderHistory(){
       const lab=dayLabel(h.ts);
       if(lab!==last){html+=`<div class="hgroup" style="margin:12px 2px 2px">${esc(lab)}</div>`;last=lab;}
       const d=h.dishId&&dishById(h.dishId),p=h.placeId&&placeById(h.placeId);
-      const emo=d?d.emoji:(p?p.emoji:'🍽️');
-      const title=d&&p?`${d.name} @ ${p.name}`:(d?d.name:(p?p.name:'(ถูกลบไปแล้ว)'));
+      const emo=h.cook&&!d?'🍳':(d?d.emoji:(p?p.emoji:'🍽️'));
+      const title=h.cook?(d?`${d.name} · ทำเอง 🍳`:'ทำกินเองที่บ้าน'):(d&&p?`${d.name} @ ${p.name}`:(d?d.name:(p?p.name:'(ถูกลบไปแล้ว)')));
       const time=new Date(h.ts).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
       html+=`<div class="item"><div class="emo">${esc(emo)}</div><div class="info"><div class="t">${esc(title)}</div><div class="s">${time} น.</div></div><button class="edit" data-del="${h.id}">ลบ</button></div>`;
     });
     box.innerHTML=html;
     box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{delItem('history',b.dataset.del);renderHistory();});
   }
-  $('#dayVal').textContent=S.settings.noRepeatDays;
+}
+function renderSettings(){
+  const st=S.settings;
+  const mark=(sel,v)=>$(sel).querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===String(v)));
+  mark('#setWheelN',st.wheelN);mark('#setSwipeMode',st.swipeMode);mark('#setSwipeN',st.swipeN);mark('#setPickN',st.pickN);
+  $('#rowSwipeN').style.display=st.swipeMode==='random'?'':'none';
+  $('#rowPickN').style.display=st.swipeMode==='pick'?'':'none';
+  $('#swipeModeDesc').textContent=st.swipeMode==='pick'
+    ?`แต่ละคนเลือกเมนู/ร้านที่อยากกินคนละไม่เกิน ${st.pickN} อย่าง (อีกคนไม่เห็น) แล้วเอาที่เลือกมารวมกันให้ทั้งคู่ปัดอีกรอบ เหมาะกับวันที่ต่างคนต่างมีในใจ`
+    :`แอปสุ่มการ์ดจากตัวเลือกที่ตรงเงื่อนไขมา${st.swipeN?' '+st.swipeN+' ใบ':'ทั้งหมด'} แล้วต่างคนต่างปัด เหมาะกับวันที่ยังคิดไม่ออก`;
+  $('#dayVal').textContent=st.noRepeatDays+' วัน';
   const ae=document.activeElement&&document.activeElement.id;
-  if(ae!=='p1')$('#p1').value=S.settings.p1;if(ae!=='p2')$('#p2').value=S.settings.p2;
+  if(ae!=='p1')$('#p1').value=st.p1;if(ae!=='p2')$('#p2').value=st.p2;
   renderSync();
 }
-$('#dayMinus').onclick=()=>{S.settings.noRepeatDays=Math.max(1,S.settings.noRepeatDays-1);save();$('#dayVal').textContent=S.settings.noRepeatDays;};
-$('#dayPlus').onclick=()=>{S.settings.noRepeatDays=Math.min(30,S.settings.noRepeatDays+1);save();$('#dayVal').textContent=S.settings.noRepeatDays;};
+function bindSet(sel,key,num){$(sel).querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{S.settings[key]=num?+b.dataset.v:b.dataset.v;save();renderSettings();});}
+bindSet('#setWheelN','wheelN',true);bindSet('#setSwipeMode','swipeMode',false);bindSet('#setSwipeN','swipeN',true);bindSet('#setPickN','pickN',true);
+$('#dayMinus').onclick=()=>{S.settings.noRepeatDays=Math.max(1,S.settings.noRepeatDays-1);save();renderSettings();};
+$('#dayPlus').onclick=()=>{S.settings.noRepeatDays=Math.min(30,S.settings.noRepeatDays+1);save();renderSettings();};
 $('#p1').onchange=e=>{S.settings.p1=e.target.value.trim()||'คนที่ 1';save();};
 $('#p2').onchange=e=>{S.settings.p2=e.target.value.trim()||'คนที่ 2';save();};
 
@@ -962,13 +1122,13 @@ $('#fileImport').onchange=async e=>{
     if(synced()){
       if(!confirm('รวมร้าน เมนู และประวัติจากไฟล์นี้เข้ากับข้อมูลของบ้าน?'))return;
       ['dishes','places','history'].forEach(c=>(o[c]||[]).forEach(x=>putItem(c,x)));
-      toast('รวมข้อมูลเข้าบ้านแล้ว');renderHistory();return;
+      toast('รวมข้อมูลเข้าบ้านแล้ว');rerender();return;
     }
     const keepHist=confirm('นำเข้าร้านและเมนูจากไฟล์นี้\n\nกด OK = ใช้ประวัติจากไฟล์ด้วย\nกด Cancel = เก็บประวัติของเครื่องนี้ไว้');
     S.places=o.places||[];S.dishes=o.dishes;
     if(keepHist)S.history=o.history||[];
     S.settings=Object.assign(S.settings,o.settings||{});
-    save();toast('นำเข้าเรียบร้อย');renderHistory();
+    save();toast('นำเข้าเรียบร้อย');rerender();
   }catch(err){toast('ไฟล์นี้ใช้ไม่ได้');}
   e.target.value='';
 };

@@ -53,10 +53,10 @@ async function realImpl() {
     },
     setSession: d => fs.setDoc(sessRef(), d),
     updatePlayer: (u, o) => fs.updateDoc(sessRef(), { ['players.' + u]: o }),
-    setResultIfAbsent: r => fs.runTransaction(db, async t => {
+    setIfAbsent: (f, v) => fs.runTransaction(db, async t => {
       const d = await t.get(sessRef());
-      if (!d.exists() || d.data().result) return;
-      t.update(sessRef(), { result: r });
+      if (!d.exists() || d.data()[f]) return;
+      t.update(sessRef(), { [f]: v });
     })
   };
 }
@@ -85,7 +85,7 @@ function mockImpl() {
     bulk(c, arr) { const st = read(); arr.forEach(o => st[pathOf(c) + '/' + o.id] = plain(o)); write(st); return Promise.resolve(); },
     setSession(d) { const st = read(); st[sk()] = plain(d); write(st); return Promise.resolve(); },
     updatePlayer(u, o) { const st = read(); if (st[sk()]) { st[sk()].players = st[sk()].players || {}; st[sk()].players[u] = plain(o); } write(st); return Promise.resolve(); },
-    setResultIfAbsent(r) { const st = read(); if (st[sk()] && !st[sk()].result) { st[sk()].result = plain(r); write(st); } return Promise.resolve(); }
+    setIfAbsent(f, v) { const st = read(); if (st[sk()] && !st[sk()][f]) { st[sk()][f] = plain(v); write(st); } return Promise.resolve(); }
   };
 }
 
@@ -111,7 +111,7 @@ const Cloud = {
   bulk(c, arr) { if (home) impl.bulk(c, plain(arr)); },
   setSession(d) { if (home) Promise.resolve(impl.setSession(plain(d))).catch(err); },
   updatePlayer(u, o) { if (home) Promise.resolve(impl.updatePlayer(u, plain(o))).catch(err); },
-  setResultIfAbsent(r) { if (home) Promise.resolve(impl.setResultIfAbsent(plain(r))).catch(e => console.warn('[cloud] result', e)); }
+  setIfAbsent(f, v) { if (home) Promise.resolve(impl.setIfAbsent(f, plain(v))).catch(e => console.warn('[cloud] setIfAbsent', e)); }
 };
 window.Cloud = Cloud;
 window.dispatchEvent(new Event('cloud-ready'));
