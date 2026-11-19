@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ข้อมูลของแต่ละ "บ้าน" (ใช้ร่วมกันได้ทุกแอป: กินไรดี, จดสลิป ฯลฯ)
+    // ต้องล็อกอิน (Anonymous) และต้องรู้รหัสบ้าน 8 ตัว ถึงจะอ่าน/เขียนได้
+    match /homes/{home}/{document=**} {
+      allow read, write: if request.auth != null && home.size() >= 8;
+    }
+  }
+}

@@ -111,6 +111,12 @@ nav.tabs button.on .i{filter:none;opacity:1}
 .ov-text{color:var(--muted);margin-bottom:22px}
 .toast{position:fixed;left:50%;bottom:calc(96px + var(--safe-b));transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 18px;border-radius:999px;font-size:15px;opacity:0;transition:.25s;pointer-events:none;z-index:60;white-space:nowrap}
 .toast.show{opacity:.95}
+.invite{background:var(--pri-soft);border-color:#F3C3AA;display:flex;align-items:center;gap:10px}
+.invite .txt{flex:1;font-size:15px}
+.homecode{font-size:30px;font-weight:800;letter-spacing:4px;text-align:center;margin:6px 0 10px;font-family:ui-monospace,Menlo,monospace}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.wait{font-size:56px;animation:bob 1.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
 .muted{color:var(--muted)}
 .mt{margin-top:12px}
 </style>
@@ -121,6 +127,7 @@ nav.tabs button.on .i{filter:none;opacity:1}
 <main>
 <!-- ============ PAGE: RANDOM ============ -->
 <section class="page active" id="page-spin">
+  <div class="card invite" id="inviteBanner" style="display:none"></div>
   <div class="card">
     <div class="seg" id="segTarget">
       <button data-v="place">🏠 สุ่มร้าน</button>
@@ -159,10 +166,11 @@ nav.tabs button.on .i{filter:none;opacity:1}
     <div class="card" style="text-align:center">
       <div class="big-emo">💞</div>
       <div style="font-weight:800;font-size:19px;margin:4px 0">ต่างคนต่างปัด แล้วดูว่าชอบอะไรตรงกัน</div>
-      <div class="muted" style="font-size:14px">แอปจะสุ่มมาให้ไม่เกิน 8 ตัวเลือก คนแรกปัดเสร็จแล้วส่งมือถือให้อีกคนปัดต่อ ถ้าชอบตรงกันหลายอัน แอปจะหมุนวงล้อเลือกให้อีกที</div>
+      <div class="muted" style="font-size:14px" id="swipeDesc"></div>
       <div class="count" id="candCount2"></div>
     </div>
-    <button class="btn sec" id="btnSwipe">💞 เริ่มปัด</button>
+    <button class="btn sec" id="btnSwipeRemote" style="margin-bottom:10px">📱📱 ปัดคนละเครื่อง</button>
+    <button class="btn sec" id="btnSwipe">📱 ปัดเครื่องเดียว (ส่งมือถือให้กัน)</button>
   </div>
 
   <div class="card result" id="resultCard" style="display:none;margin-top:14px"></div>
@@ -180,6 +188,8 @@ nav.tabs button.on .i{filter:none;opacity:1}
 
 <!-- ============ PAGE: HISTORY ============ -->
 <section class="page" id="page-history">
+  <div class="card" id="syncCard"></div>
+  <div class="hgroup">กินอะไรไปแล้วบ้าง</div>
   <div class="card" id="historyList" style="padding:4px 12px"></div>
   <div class="hgroup">ตั้งค่า</div>
   <div class="card">
@@ -191,12 +201,12 @@ nav.tabs button.on .i{filter:none;opacity:1}
         <button class="btn ghost small" id="dayPlus">+</button>
       </div>
     </div>
-    <div class="label">ชื่อคนปัด (โหมดปัดจับคู่)</div>
+    <div class="label">ชื่อคนปัด (โหมดปัดเครื่องเดียว)</div>
     <div class="btns2"><input class="field" id="p1" maxlength="20"><input class="field" id="p2" maxlength="20"></div>
   </div>
   <div class="card">
     <b>สำรอง / ส่งข้อมูลให้อีกเครื่อง</b>
-    <div class="muted" style="font-size:13px;margin:4px 0 10px">ข้อมูลเก็บในมือถือเครื่องนี้เท่านั้น ส่งไฟล์สำรองให้แฟนผ่าน LINE แล้วให้อีกเครื่องกด "นำเข้า" ก็จะได้ร้านและเมนูชุดเดียวกัน</div>
+    <div class="muted" style="font-size:13px;margin:4px 0 10px">เก็บร้าน เมนู และประวัติเป็นไฟล์ไว้กันเหนียว (ถ้าเชื่อมบ้านอยู่ การนำเข้าจะรวมเข้ากับข้อมูลของบ้าน)</div>
     <div class="btns2">
       <button class="btn ghost small" id="btnExport">⬇️ ส่งออก</button>
       <button class="btn ghost small" id="btnImport">⬆️ นำเข้า</button>
@@ -204,7 +214,7 @@ nav.tabs button.on .i{filter:none;opacity:1}
     <input type="file" id="fileImport" accept=".json,application/json" style="display:none">
   </div>
   <div style="text-align:center;margin:6px 0 10px"><button class="muted" style="font-size:13px;text-decoration:underline" id="btnReset">ล้างข้อมูลทั้งหมด</button></div>
-  <div class="muted" style="font-size:12px;text-align:center">กินไรดี V.0.1.0</div>
+  <div class="muted" style="font-size:12px;text-align:center">กินไรดี V.0.2.0</div>
 </section>
 </main>
 
@@ -230,7 +240,8 @@ nav.tabs button.on .i{filter:none;opacity:1}
 <script>
 'use strict';
 /* ================= storage ================= */
-const KEY='kinraidee_v1';
+const DEV=new URLSearchParams(location.search).get('dev')||'';
+const KEY='kinraidee_v1'+(DEV?'_'+DEV:'');
 const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
 const SEED_DISHES=[
  ['🌶️','กะเพรา'],['🍗','ข้าวมันไก่'],['🍜','ก๋วยเตี๋ยว'],['🥗','ส้มตำ'],['🍲','ชาบู'],['🔥','หมูกระทะ'],
@@ -238,11 +249,13 @@ const SEED_DISHES=[
  ['🍔','เบอร์เกอร์'],['🍗','ไก่ทอด'],['🥩','สเต๊ก'],['🥟','ติ่มซำ'],['🍝','สปาเกตตี'],['🍚','ข้าวผัด']
 ];
 function freshState(){
-  return {ver:1,
-    dishes:SEED_DISHES.map(([e,n])=>({id:uid(),emoji:e,name:n})),
+  const t0=Date.now();
+  return {ver:2,
+    dishes:SEED_DISHES.map(([e,n],i)=>({id:uid(),emoji:e,name:n,ts:t0+i})),
     places:[], history:[],
     settings:{noRepeatDays:3,p1:'คนที่ 1',p2:'คนที่ 2'},
-    filters:{target:'dish',mode:'any',price:[1,2,3],noRepeat:true,decide:'wheel'}};
+    filters:{target:'dish',mode:'any',price:[1,2,3],noRepeat:true,decide:'wheel'},
+    home:null, myName:'', seen:[]};
 }
 let S;
 function load(){
@@ -251,10 +264,23 @@ function load(){
   const d=freshState();
   S.settings=Object.assign(d.settings,S.settings||{});
   S.filters=Object.assign(d.filters,S.filters||{});
-  S.places=S.places||[];S.history=S.history||[];
+  S.places=S.places||[];S.history=S.history||[];S.seen=S.seen||[];
+  if(S.home===undefined)S.home=null; if(!S.myName)S.myName='';
+  let t=1;S.dishes.forEach(x=>{if(!x.ts)x.ts=t++;});S.places.forEach(x=>{if(!x.ts)x.ts=Date.now()+t++;});
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
+
+/* ================= data changes (local + sync) ================= */
+const synced=()=>!!(S.home&&window.Cloud&&Cloud.home===S.home);
+const byTs=a=>a.sort((x,y)=>(x.ts||0)-(y.ts||0));
+function putItem(col,obj){
+  const arr=S[col],i=arr.findIndex(x=>x.id===obj.id);
+  if(i>=0)arr[i]=obj;else arr.push(obj);
+  if(col==='history'){S.history.sort((a,b)=>b.ts-a.ts);if(S.history.length>300)S.history.length=300;}
+  save();if(synced())Cloud.put(col,obj.id,obj);
+}
+function delItem(col,id){S[col]=S[col].filter(x=>x.id!==id);save();if(synced())Cloud.del(col,id);}
 
 /* ================= helpers ================= */
 const $=s=>document.querySelector(s);
@@ -344,6 +370,13 @@ function renderSpin(){
   $('#noRepLabel').textContent=`ข้ามที่กินไปใน ${S.settings.noRepeatDays} วันล่าสุด`;
   $('#wheelArea').style.display=f.decide==='wheel'?'':'none';
   $('#swipeArea').style.display=f.decide==='swipe'?'':'none';
+  const on=!!S.home;
+  $('#btnSwipeRemote').style.display=on?'':'none';
+  $('#btnSwipe').className=on?'btn ghost':'btn sec';
+  $('#swipeDesc').textContent=on
+    ?'เริ่มที่เครื่องไหนก็ได้ อีกเครื่องจะมีปุ่มชวนปัดเด้งขึ้นมา ปัดเสร็จทั้งคู่แล้วผลจะขึ้นพร้อมกัน ถ้าชอบตรงกันหลายอันวงล้อจะเลือกให้'
+    :'สุ่มมาไม่เกิน 8 ตัวเลือก คนแรกปัดเสร็จแล้วส่งมือถือให้อีกคน ถ้าชอบตรงกันหลายอันวงล้อจะเลือกให้ (เชื่อมบ้านในแท็บ "ประวัติ" เพื่อปัดคนละเครื่อง)';
+  renderInvite();
   if(!spinning){
     const c=candidates();
     let msg;
@@ -353,7 +386,7 @@ function renderSpin(){
     $('#candCount').textContent=msg;
     $('#candCount2').textContent=msg;
     $('#btnSpin').disabled=c.length===0;
-    $('#btnSwipe').disabled=c.length===0;
+    $('#btnSwipe').disabled=c.length===0;$('#btnSwipeRemote').disabled=c.length===0;
     if(!wheelLocked){wheelItems=c.length>12?shuffle(c).slice(0,12):shuffle(c);}
     drawWheel();
   }
@@ -391,11 +424,11 @@ function drawWheel(){
 }
 window.addEventListener('resize',()=>drawWheel());
 
-function spinWheel(onDone){
+function spinWheel(onDone,forced){
   if(spinning||!wheelItems.length)return;
   spinning=true;hideResult();
   $('#btnSpin').disabled=true;
-  const n=wheelItems.length,seg=2*Math.PI/n,win=Math.floor(Math.random()*n);
+  const n=wheelItems.length,seg=2*Math.PI/n,win=(forced>=0&&forced<n)?forced:Math.floor(Math.random()*n);
   const base=1.5*Math.PI-(win+0.5)*seg+(Math.random()-0.5)*seg*0.6;
   let target=base;const minEnd=wheelRot+6*2*Math.PI;
   while(target<minEnd)target+=2*Math.PI;
@@ -419,9 +452,12 @@ document.querySelector('.hub').onclick=()=>$('#btnSpin').click();
 
 /* ---- result ---- */
 function hideResult(){$('#resultCard').style.display='none';wheelLocked=null;}
-function showResult(item){
+function showResult(item,opts){
   const rc=$('#resultCard');rc.style.display='block';
+  const hid=opts&&opts.sid?'s_'+opts.sid:null; // ผลปัดคนละเครื่อง: ทั้งสองเครื่องบันทึกเป็นรายการเดียวกัน
   let html='';
+  if(item.kind==='place'&&!placeById(item.id)){rc.style.display='none';toast('ร้านนี้ถูกลบไปแล้ว');return;}
+  if(item.kind==='dish'&&!dishById(item.id)){rc.style.display='none';toast('เมนูนี้ถูกลบไปแล้ว');return;}
   if(item.kind==='place'){
     const p=placeById(item.id);
     const ds=(p.dishIds||[]).map(dishById).filter(Boolean);
@@ -432,7 +468,7 @@ function showResult(item){
       ${p.note?`<div class="muted" style="font-size:14px;margin-bottom:10px">📝 ${esc(p.note)}</div>`:''}
       <div class="btns2"><button class="btn ghost" id="rAgain">🔄 สุ่มใหม่</button><button class="btn pri" id="rOk">✅ กินอันนี้</button></div>`;
     rc.innerHTML=html;
-    $('#rOk').onclick=()=>logEat({placeId:p.id});
+    $('#rOk').onclick=()=>logEat({placeId:p.id},hid);
   }else{
     const d=dishById(item.id);
     const ps=placesForDish(d.id).filter(placeOk);
@@ -447,8 +483,8 @@ function showResult(item){
     }
     html+=`<div class="btns2"><button class="btn ghost" id="rAgain">🔄 สุ่มใหม่</button><button class="btn pri" id="rOk">✅ กินอันนี้</button></div>`;
     rc.innerHTML=html;
-    $('#rOk').onclick=()=>logEat({dishId:d.id});
-    rc.querySelectorAll('.pitem').forEach(b=>b.onclick=()=>logEat({dishId:d.id,placeId:b.dataset.pid}));
+    $('#rOk').onclick=()=>logEat({dishId:d.id},hid);
+    rc.querySelectorAll('.pitem').forEach(b=>b.onclick=()=>logEat({dishId:d.id,placeId:b.dataset.pid},hid));
     const sp=$('#rSpinPlace');
     if(sp)sp.onclick=()=>{
       wheelItems=shuffle(ps).map(p=>({kind:'place',id:p.id,emoji:p.emoji||'🏠',name:p.name}));
@@ -456,29 +492,30 @@ function showResult(item){
       $('#wheelArea').style.display='';$('#swipeArea').style.display='none';
       $('#segDecide').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v==='wheel'));
       drawWheel();window.scrollTo({top:0,behavior:'smooth'});
-      setTimeout(()=>spinWheel(it=>{wheelLocked=true;showPlaceForDish(d,it);}),350);
+      setTimeout(()=>spinWheel(it=>{wheelLocked=true;showPlaceForDish(d,it,hid);}),350);
     };
   }
   $('#rAgain').onclick=()=>{hideResult();
-    if(S.filters.decide==='swipe'){startSwipe();}
+    if(S.filters.decide==='swipe'){S.home?startRemoteSwipe():startSwipe();}
     else{window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>$('#btnSpin').click(),300);}
   };
   setTimeout(()=>rc.scrollIntoView({behavior:'smooth',block:'center'}),60);
 }
-function showPlaceForDish(d,item){
-  const p=placeById(item.id),rc=$('#resultCard');rc.style.display='block';
+function showPlaceForDish(d,item,hid){
+  const p=placeById(item.id),rc=$('#resultCard');if(!p)return;rc.style.display='block';
   rc.innerHTML=`<div class="muted" style="font-size:14px">${esc(d.emoji+' '+d.name)} ที่…</div>
     <div class="emo">${esc(p.emoji||'🏠')}</div><div class="name">${esc(p.name)}</div>
     <div class="tags">${placeTags(p)}</div>
     <div class="btns2"><button class="btn ghost" id="rAgain">🔄 สุ่มร้านใหม่</button><button class="btn pri" id="rOk">✅ กินอันนี้</button></div>`;
-  $('#rOk').onclick=()=>logEat({dishId:d.id,placeId:p.id});
-  $('#rAgain').onclick=()=>{window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>spinWheel(it=>showPlaceForDish(d,it)),300);};
+  $('#rOk').onclick=()=>logEat({dishId:d.id,placeId:p.id},hid);
+  $('#rAgain').onclick=()=>{window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>spinWheel(it=>showPlaceForDish(d,it,hid)),300);};
   setTimeout(()=>rc.scrollIntoView({behavior:'smooth',block:'center'}),60);
 }
-function logEat(o){
-  S.history.unshift(Object.assign({id:uid(),ts:Date.now()},o));
-  if(S.history.length>300)S.history.length=300;
-  save();hideResult();toast('บันทึกแล้ว อร่อยนะ 😋');renderSpin();
+function logEat(o,hid){
+  const h=Object.assign({id:hid||uid(),ts:Date.now()},o);
+  if(S.myName)h.by=S.myName;
+  putItem('history',h);
+  hideResult();toast('บันทึกแล้ว อร่อยนะ 😋');renderSpin();
 }
 
 /* ================= swipe match ================= */
@@ -488,14 +525,22 @@ $('#ovClose').onclick=()=>{$('#overlay').classList.remove('show');SW=null;};
 function startSwipe(){
   const c=candidates();
   if(!c.length){toast('ไม่มีตัวเลือกที่ตรงเงื่อนไข');return;}
-  SW={items:shuffle(c).slice(0,8),player:0,idx:0,likes:[new Set(),new Set()]};
+  SW={mode:'local',items:shuffle(c).slice(0,8),player:0,idx:0,likes:[new Set(),new Set()]};
   $('#overlay').classList.add('show');
   handoff();
 }
-function pname(i){return i===0?S.settings.p1:S.settings.p2;}
+function pname(i){if(SW&&SW.mode==='remote')return S.myName||'คุณ';return i===0?S.settings.p1:S.settings.p2;}
 function handoff(){
   const p=SW.player;
   $('#ovWho').textContent='';
+  if(SW.mode==='remote'){
+    $('#ovBody').innerHTML=`<div class="big-emo">📱</div>
+      <div class="ov-title">ปัดในเครื่องของ ${esc(pname(0))}</div>
+      <div class="ov-text">ปัดขวา/กด ❤️ ถ้าอยากกิน ปัดซ้าย/กด ✖️ ถ้าไม่เอา<br>อีกคนปัดในเครื่องตัวเอง ผลจะขึ้นเมื่อปัดเสร็จทั้งคู่<br>มีทั้งหมด ${SW.items.length} ตัวเลือก</div>
+      <button class="btn pri" style="max-width:300px" id="ovGo">เริ่มปัด</button>`;
+    $('#ovGo').onclick=()=>{SW.idx=0;showCard();};
+    return;
+  }
   $('#ovBody').innerHTML=`<div class="big-emo">${p===0?'👋':'🙈'}</div>
     <div class="ov-title">ตาของ ${esc(pname(p))}</div>
     <div class="ov-text">${p===0?`ปัดขวา/กด ❤️ ถ้าอยากกิน ปัดซ้าย/กด ✖️ ถ้าไม่เอา<br>มีทั้งหมด ${SW.items.length} ตัวเลือก`:`ส่งมือถือให้ ${esc(pname(1))} ได้เลย<br>(${esc(pname(0))} ห้ามแอบดูนะ)`}</div>
@@ -526,14 +571,15 @@ function showCard(){
   card.addEventListener('pointerup',end);card.addEventListener('pointercancel',end);
 }
 function decide(yes){
-  if(!SW||SW.busy)return;SW.busy=true;
+  if(!SW||SW.busy||!$('#scard'))return;SW.busy=true;
   const card=$('#scard'),it=SW.items[SW.idx];
   if(yes)SW.likes[SW.player].add(it.kind+':'+it.id);
   card.style.transition='transform .28s ease-in, opacity .28s';
   card.style.transform=`translateX(${yes?420:-420}px) rotate(${yes?22:-22}deg)`;card.style.opacity=0;
   card.querySelector(yes?'.like':'.nope').style.opacity=1;
-  setTimeout(()=>{SW.busy=false;SW.idx++;
+  setTimeout(()=>{if(!SW)return;SW.busy=false;SW.idx++;
     if(SW.idx<SW.items.length)showCard();
+    else if(SW.mode==='remote')finishRemote();
     else if(SW.player===0){SW.player=1;SW.items=shuffle(SW.items);handoff();}
     else finishSwipe();},280);
 }
@@ -565,6 +611,213 @@ function spinFrom(list){
   wheelItems=shuffle(list);wheelLocked=true;drawWheel();
   window.scrollTo({top:0,behavior:'smooth'});
   setTimeout(()=>spinWheel(),400);
+}
+
+/* ================= swipe on two phones ================= */
+let SESSION=null;
+const ikey=it=>it.kind+':'+it.id;
+$('#btnSwipeRemote').onclick=startRemoteSwipe;
+function startRemoteSwipe(){
+  if(!synced()){toast('ยังไม่ได้เชื่อมบ้าน');return;}
+  if(!S.myName){toast('ตั้งชื่อเล่นในแท็บ "ประวัติ" ก่อนนะ');go('history');return;}
+  const c=candidates();
+  if(!c.length){toast('ไม่มีตัวเลือกที่ตรงเงื่อนไข');return;}
+  const items=shuffle(c).slice(0,8).map(({kind,id,emoji,name})=>({kind,id,emoji,name}));
+  const s={id:uid(),items,createdAt:Date.now(),by:Cloud.uid,byName:S.myName,players:{},result:null};
+  Cloud.setSession(s);SESSION=s;
+  beginRemoteSwipe();
+}
+function beginRemoteSwipe(){
+  if(!SESSION)return;
+  SW={mode:'remote',sid:SESSION.id,items:SESSION.items.slice(),player:0,idx:0,likes:[new Set(),new Set()]};
+  $('#overlay').classList.add('show');handoff();
+}
+function otherName(s){
+  const o=Object.entries((s&&s.players)||{}).find(([k])=>k!==Cloud.uid);
+  if(o)return o[1].name;
+  return s&&s.by!==Cloud.uid?s.byName:'แฟน';
+}
+function finishRemote(){
+  const me={name:S.myName,likes:[...SW.likes[0]],done:true,at:Date.now()};
+  Cloud.updatePlayer(Cloud.uid,me);
+  if(SESSION&&SESSION.id===SW.sid){SESSION.players=Object.assign({},SESSION.players,{[Cloud.uid]:me});}
+  $('#ovWho').textContent='ปัดเสร็จแล้ว';
+  $('#ovBody').innerHTML=`<div class="wait">⏳</div><div class="ov-title">รอ ${esc(otherName(SESSION))} ปัดอยู่…</div>
+    <div class="ov-text">ปิดหน้านี้ได้เลย พอปัดเสร็จทั้งคู่ ผลจะเด้งขึ้นมาเอง</div>
+    <button class="btn ghost" style="max-width:300px" id="ovGo">ปิด</button>`;
+  $('#ovGo').onclick=()=>{$('#overlay').classList.remove('show');SW=null;renderInvite();};
+  checkSession();
+}
+function computeResult(s){
+  const done=Object.values(s.players||{}).filter(p=>p.done).slice(0,2);
+  const A=new Set(done[0].likes||[]),B=new Set(done[1].likes||[]);
+  const matches=[...A].filter(k=>B.has(k)).sort();
+  const either=[...new Set([...A,...B])].sort();
+  // สุ่มแบบกำหนดจากรหัสรอบ: ไม่ว่าเครื่องไหนคำนวณก็ได้ผลเดียวกัน
+  let h=2166136261;for(const ch of s.id){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0;}
+  return {matches,either,winner:matches.length?matches[h%matches.length]:null};
+}
+function checkSession(){
+  const s=SESSION;if(!s||!synced())return;
+  const ps=s.players||{};
+  const doneN=Object.values(ps).filter(p=>p.done).length;
+  if(doneN>=2&&!s.result)Cloud.setResultIfAbsent(computeResult(s));
+  if(s.result&&ps[Cloud.uid]&&ps[Cloud.uid].done&&!S.seen.includes(s.id)){
+    S.seen=[...S.seen,s.id].slice(-20);save();
+    presentRemoteResult(s);
+  }
+}
+function presentRemoteResult(s){
+  $('#overlay').classList.remove('show');SW=null;
+  if(curPage!=='spin')go('spin');
+  const r=s.result,find=k=>s.items.find(i=>ikey(i)===k);
+  if(r.winner){
+    const matches=r.matches.map(find).filter(Boolean);
+    if(matches.length>1){
+      S.filters.decide='wheel';save();renderSpin();
+      wheelItems=matches;wheelLocked=true;drawWheel();
+      window.scrollTo({top:0,behavior:'smooth'});
+      toast(`ชอบตรงกัน ${matches.length} อัน ให้วงล้อตัดสิน 🎡`);
+      const idx=matches.findIndex(i=>ikey(i)===r.winner);
+      setTimeout(()=>spinWheel(it=>showResult(it,{sid:s.id}),idx),700);
+    }else{toast('ชอบตรงกันพอดี 1 อัน! 💞');showResult(find(r.winner),{sid:s.id});}
+    return;
+  }
+  const either=(r.either||[]).map(find).filter(Boolean);
+  $('#overlay').classList.add('show');$('#ovWho').textContent='ผลลัพธ์';
+  $('#ovBody').innerHTML=`<div class="big-emo">😅</div><div class="ov-title">ไม่ตรงกันเลย</div>
+    <div class="ov-text">${either.length?`มีที่คนใดคนหนึ่งอยากกิน ${either.length} อัน<br>(สุ่มในเครื่องเดียวพอนะ)`:'ไม่มีใครอยากกินอะไรเลย 555'}</div>
+    ${either.length?`<button class="btn pri" style="max-width:300px;margin-bottom:10px" id="ovEither">🎡 สุ่มจากที่ใครก็ได้ชอบ</button>`:''}
+    <button class="btn ghost" style="max-width:300px" id="ovRetry">🔄 ปัดชุดใหม่</button>`;
+  if(either.length)$('#ovEither').onclick=()=>spinFrom(either);
+  $('#ovRetry').onclick=startRemoteSwipe;
+}
+function renderInvite(){
+  const b=$('#inviteBanner'),s=SESSION;
+  if(!synced()||!s||s.result||Date.now()-s.createdAt>3*3600e3||(SW&&SW.mode==='remote')){b.style.display='none';return;}
+  const me=(s.players||{})[Cloud.uid];
+  b.style.display='flex';
+  if(me&&me.done){b.innerHTML=`<div class="txt">⏳ ปัดเสร็จแล้ว รอ <b>${esc(otherName(s))}</b> ปัดอยู่…</div>`;return;}
+  const txt=s.by===Cloud.uid?`💞 ปัดของคุณยังไม่เสร็จ (${s.items.length} ตัวเลือก)`:`💞 <b>${esc(s.byName)}</b> ชวนปัดเลือกกิน (${s.items.length} ตัวเลือก)`;
+  b.innerHTML=`<div class="txt">${txt}</div><button class="btn pri small" id="btnJoinSwipe">ปัดเลย</button>`;
+  $('#btnJoinSwipe').onclick=()=>{
+    if(!S.myName){toast('ตั้งชื่อเล่นในแท็บ "ประวัติ" ก่อนนะ');go('history');return;}
+    beginRemoteSwipe();
+  };
+}
+
+/* ================= sync with Cloud ================= */
+let pendingJoin=null; // {code,buf,timer}
+let netOk=navigator.onLine;
+addEventListener('online',()=>{netOk=true;renderSync();});
+addEventListener('offline',()=>{netOk=false;renderSync();});
+function rerender(){
+  if(curPage==='spin'){if(!spinning)renderSpin();}
+  else if(curPage==='manage')renderManage();
+  else renderHistory();
+}
+window.App={
+  remote(col,arr,meta){
+    if(pendingJoin){
+      pendingJoin.buf[col]=arr;
+      if(col!=='dishes')return;
+      if(arr.length===0){
+        if(meta&&meta.fromCache)return; // ยังไม่ได้คำตอบจากเซิร์ฟเวอร์
+        failJoin('ไม่พบบ้านรหัสนี้ ลองตรวจรหัสอีกครั้งนะ');return;
+      }
+      const pj=pendingJoin;pendingJoin=null;clearTimeout(pj.timer);
+      S.home=pj.code;
+      ['dishes','places','history'].forEach(c=>{if(pj.buf[c])S[c]=pj.buf[c];});
+      byTs(S.dishes);byTs(S.places);save();
+      toast('เข้าบ้านเรียบร้อย ข้อมูลตรงกันแล้ว 🏠');renderSync();rerender();return;
+    }
+    if(!S.home)return;
+    S[col]=col==='history'?arr:byTs(arr);
+    save();rerender();
+  },
+  remoteSession(s){
+    if(pendingJoin||!S.home)return;
+    SESSION=s;checkSession();renderInvite();
+  },
+  cloudError(e){
+    const code=(e&&e.code)||'';
+    if(code.includes('permission-denied'))toast('ไม่มีสิทธิ์เข้าถึงข้อมูล ตรวจ Rules ใน Firestore');
+    else if(code.includes('admin-restricted')||code.includes('operation-not-allowed'))toast('ยังไม่ได้เปิด Anonymous ใน Authentication');
+    else if(pendingJoin)failJoin('เชื่อมต่อไม่ได้ ลองใหม่ตอนต่อเน็ตนะ');
+    renderSync();
+  }
+};
+function whenCloud(cb){if(window.Cloud)cb();else addEventListener('cloud-ready',cb,{once:true});}
+function fmtCode(c){return c?c.slice(0,4)+'-'+c.slice(4):'';}
+function newCode(){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';const r=crypto.getRandomValues(new Uint32Array(8));for(let i=0;i<8;i++)s+=A[r[i]%A.length];return s;}
+function failJoin(msg){
+  if(!pendingJoin)return;clearTimeout(pendingJoin.timer);pendingJoin=null;
+  if(window.Cloud)Cloud.stop();S.home=null;save();alert(msg);renderSync();
+}
+function needName(){
+  const v=($('#myName')&&$('#myName').value.trim())||S.myName;
+  if(!v){toast('ใส่ชื่อเล่นก่อนนะ');$('#myName')&&$('#myName').focus();return false;}
+  S.myName=v;save();return true;
+}
+async function createHome(){
+  if(!needName())return;
+  const code=newCode();
+  $('#syncCard').innerHTML='<div class="empty">กำลังสร้างบ้าน…</div>';
+  whenCloud(async()=>{
+    S.home=code;
+    const ok=await Cloud.start(code,{upload:{dishes:S.dishes,places:S.places,history:S.history}});
+    if(!ok){S.home=null;toast('เชื่อมต่อไม่ได้ ต้องต่อเน็ตตอนสร้างบ้านครั้งแรก');renderSync();return;}
+    save();renderSync();rerender();toast('สร้างบ้านแล้ว ส่งรหัสให้แฟนได้เลย');
+  });
+}
+function joinHome(){
+  if(!needName())return;
+  openModal(`<h2>เข้าร่วมบ้าน</h2>
+    <div class="muted" style="font-size:14px">กรอกรหัสบ้าน 8 ตัวจากเครื่องของแฟน ร้าน เมนู และประวัติในเครื่องนี้จะถูกแทนด้วยข้อมูลของบ้าน</div>
+    <input class="field mt" id="fCode" placeholder="เช่น ABCD-2345" maxlength="9" autocapitalize="characters" autocomplete="off" style="text-align:center;font-size:22px;letter-spacing:3px">
+    <div class="btns2 mt"><button class="btn ghost" id="fCancel">ยกเลิก</button><button class="btn pri" id="fSave">เข้าร่วม</button></div>`);
+  $('#fCancel').onclick=closeModal;
+  $('#fSave').onclick=()=>{
+    const code=$('#fCode').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(code.length!==8){toast('รหัสต้องมี 8 ตัว');return;}
+    closeModal();
+    pendingJoin={code,buf:{},timer:setTimeout(()=>failJoin('เชื่อมต่อนานเกินไป ลองใหม่ตอนเน็ตดีนะ'),20000)};
+    $('#syncCard').innerHTML='<div class="empty">กำลังเชื่อมกับบ้าน…</div>';
+    whenCloud(async()=>{const ok=await Cloud.start(code);if(!ok)failJoin('เชื่อมต่อไม่ได้ ลองใหม่ตอนต่อเน็ตนะ');});
+  };
+}
+function leaveHome(){
+  if(!confirm('เลิกซิงก์เครื่องนี้?\nข้อมูลที่มีตอนนี้ยังอยู่ในเครื่อง ส่วนเครื่องของแฟนยังใช้บ้านเดิมต่อได้'))return;
+  if(window.Cloud)Cloud.stop();S.home=null;SESSION=null;save();renderSync();rerender();
+}
+async function shareCode(){
+  const txt=`มาใช้แอป "กินไรดี" ด้วยกัน 🍽️\nเปิดแอป → แท็บประวัติ → "มีรหัสแล้ว" แล้วกรอกรหัสบ้าน: ${fmtCode(S.home)}`;
+  try{if(navigator.share){await navigator.share({text:txt});return;}}catch(e){if(e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(fmtCode(S.home));toast('คัดลอกรหัสแล้ว');}catch(e){toast('รหัสบ้าน: '+fmtCode(S.home));}
+}
+function renderSync(){
+  const c=$('#syncCard');if(!c)return;
+  if(pendingJoin)return;
+  if(document.activeElement&&document.activeElement.id==='myName')return;
+  const nameField=`<div class="label">ชื่อเล่นของคุณ (ใช้ตอนปัดคนละเครื่อง)</div><input class="field" id="myName" maxlength="20" placeholder="เช่น ยก" value="${esc(S.myName)}">`;
+  if(!S.home){
+    c.innerHTML=`<b>👫 ซิงก์กับแฟน</b>
+      <div class="muted" style="font-size:13px;margin:4px 0 2px">สร้าง "บ้าน" ในเครื่องหนึ่ง แล้วให้อีกเครื่องกรอกรหัสบ้าน ร้าน เมนู และประวัติจะตรงกันทั้งสองเครื่อง และปัดเลือกคนละเครื่องได้ ใช้ออฟไลน์ได้ ต่อเน็ตเมื่อไหร่ก็ซิงก์เอง</div>
+      ${nameField}
+      <div class="btns2 mt"><button class="btn pri small" id="btnCreateHome">🏠 สร้างบ้านใหม่</button><button class="btn ghost small" id="btnJoinHome">🔑 มีรหัสแล้ว</button></div>`;
+    $('#btnCreateHome').onclick=createHome;$('#btnJoinHome').onclick=joinHome;
+  }else{
+    const live=synced();
+    const st=!live?['#C9A227','กำลังเชื่อมต่อ…']:netOk?['#6E9E7C','ซิงก์อยู่']:['#C9A227','ออฟไลน์ จะซิงก์เมื่อต่อเน็ต'];
+    c.innerHTML=`<div class="row"><b>👫 ซิงก์กับแฟน</b><span class="muted" style="font-size:13px"><span class="dot" style="background:${st[0]}"></span>${st[1]}</span></div>
+      <div class="muted" style="font-size:13px;margin-top:8px;text-align:center">รหัสบ้าน</div>
+      <div class="homecode">${fmtCode(S.home)}</div>
+      <button class="btn ghost small" id="btnShareCode" style="width:100%">📤 ส่งรหัสให้แฟน</button>
+      ${nameField}
+      <div style="text-align:center;margin-top:12px"><button class="muted" style="font-size:13px;text-decoration:underline" id="btnLeave">ออกจากบ้าน (เลิกซิงก์)</button></div>`;
+    $('#btnShareCode').onclick=shareCode;$('#btnLeave').onclick=leaveHome;
+  }
+  $('#myName').onchange=e=>{S.myName=e.target.value.trim();save();};
 }
 
 /* ================= manage page ================= */
@@ -623,11 +876,11 @@ function editPlace(id){
     p.name=$('#fName').value.trim();p.emoji=$('#fEmo').value.trim()||'🏠';p.note=$('#fNote').value.trim();
     if(!p.name){toast('ใส่ชื่อร้านก่อนนะ');return;}
     if(!p.dinein&&!p.delivery){toast('เลือกว่าไปกินหรือสั่งได้อย่างน้อย 1 แบบ');return;}
-    if(id){Object.assign(placeById(id),p);}else{p.id=uid();S.places.push(p);}
-    save();closeModal();renderManage();toast('บันทึกร้านแล้ว');
+    if(!id){p.id=uid();p.ts=Date.now();}
+    putItem('places',p);closeModal();renderManage();toast('บันทึกร้านแล้ว');
   };
   if(id)$('#fDelBtn').onclick=()=>{if(!confirm(`ลบร้าน "${p.name}" ?`))return;
-    S.places=S.places.filter(x=>x.id!==id);save();closeModal();renderManage();};
+    delItem('places',id);closeModal();renderManage();};
 }
 function editDish(id){
   const d=id?Object.assign({},dishById(id)):{name:'',emoji:'🍽️'};
@@ -645,13 +898,18 @@ function editDish(id){
   $('#fSave').onclick=()=>{
     d.name=$('#fName').value.trim();d.emoji=$('#fEmo').value.trim()||'🍽️';
     if(!d.name){toast('ใส่ชื่อเมนูก่อนนะ');return;}
-    if(id)Object.assign(dishById(id),d);else{d.id=uid();S.dishes.push(d);}
-    S.places.forEach(p=>{p.dishIds=(p.dishIds||[]).filter(x=>x!==d.id);if(sel.has(p.id))p.dishIds.push(d.id);});
-    save();closeModal();renderManage();toast('บันทึกเมนูแล้ว');
+    if(!id){d.id=uid();d.ts=Date.now();}
+    putItem('dishes',d);
+    S.places.forEach(p=>{
+      const had=(p.dishIds||[]).includes(d.id),want=sel.has(p.id);
+      if(had!==want){const np=Object.assign({},p,{dishIds:want?[...(p.dishIds||[]),d.id]:p.dishIds.filter(x=>x!==d.id)});putItem('places',np);}
+    });
+    closeModal();renderManage();toast('บันทึกเมนูแล้ว');
   };
   if(id)$('#fDelBtn').onclick=()=>{if(!confirm(`ลบเมนู "${d.name}" ?`))return;
-    S.dishes=S.dishes.filter(x=>x.id!==id);S.places.forEach(p=>p.dishIds=(p.dishIds||[]).filter(x=>x!==id));
-    save();closeModal();renderManage();};
+    delItem('dishes',id);
+    S.places.filter(p=>(p.dishIds||[]).includes(id)).forEach(p=>putItem('places',Object.assign({},p,{dishIds:p.dishIds.filter(x=>x!==id)})));
+    closeModal();renderManage();};
 }
 
 /* ================= history page ================= */
@@ -675,10 +933,12 @@ function renderHistory(){
       html+=`<div class="item"><div class="emo">${esc(emo)}</div><div class="info"><div class="t">${esc(title)}</div><div class="s">${time} น.</div></div><button class="edit" data-del="${h.id}">ลบ</button></div>`;
     });
     box.innerHTML=html;
-    box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{S.history=S.history.filter(h=>h.id!==b.dataset.del);save();renderHistory();});
+    box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{delItem('history',b.dataset.del);renderHistory();});
   }
   $('#dayVal').textContent=S.settings.noRepeatDays;
-  $('#p1').value=S.settings.p1;$('#p2').value=S.settings.p2;
+  const ae=document.activeElement&&document.activeElement.id;
+  if(ae!=='p1')$('#p1').value=S.settings.p1;if(ae!=='p2')$('#p2').value=S.settings.p2;
+  renderSync();
 }
 $('#dayMinus').onclick=()=>{S.settings.noRepeatDays=Math.max(1,S.settings.noRepeatDays-1);save();$('#dayVal').textContent=S.settings.noRepeatDays;};
 $('#dayPlus').onclick=()=>{S.settings.noRepeatDays=Math.min(30,S.settings.noRepeatDays+1);save();$('#dayVal').textContent=S.settings.noRepeatDays;};
@@ -699,6 +959,11 @@ $('#fileImport').onchange=async e=>{
   try{
     const o=JSON.parse(await f.text());
     if(o.app!=='kinraidee'||!Array.isArray(o.dishes))throw 0;
+    if(synced()){
+      if(!confirm('รวมร้าน เมนู และประวัติจากไฟล์นี้เข้ากับข้อมูลของบ้าน?'))return;
+      ['dishes','places','history'].forEach(c=>(o[c]||[]).forEach(x=>putItem(c,x)));
+      toast('รวมข้อมูลเข้าบ้านแล้ว');renderHistory();return;
+    }
     const keepHist=confirm('นำเข้าร้านและเมนูจากไฟล์นี้\n\nกด OK = ใช้ประวัติจากไฟล์ด้วย\nกด Cancel = เก็บประวัติของเครื่องนี้ไว้');
     S.places=o.places||[];S.dishes=o.dishes;
     if(keepHist)S.history=o.history||[];
@@ -707,11 +972,14 @@ $('#fileImport').onchange=async e=>{
   }catch(err){toast('ไฟล์นี้ใช้ไม่ได้');}
   e.target.value='';
 };
-$('#btnReset').onclick=()=>{if(confirm('ล้างร้าน เมนู และประวัติทั้งหมด? (กู้คืนไม่ได้)')){S=freshState();save();go('spin');toast('ล้างข้อมูลแล้ว');}};
+$('#btnReset').onclick=()=>{if(S.home){toast('ออกจากบ้านก่อน ถึงจะล้างข้อมูลได้');return;}if(confirm('ล้างร้าน เมนู และประวัติทั้งหมด? (กู้คืนไม่ได้)')){S=freshState();save();go('spin');toast('ล้างข้อมูลแล้ว');}};
 
 /* ================= init ================= */
 go('spin');
-if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+if(S.home){const code=S.home;whenCloud(async()=>{const ok=await Cloud.start(code);if(ok&&S.home===code){renderSync();rerender();}});}
+setInterval(()=>{if(curPage==='spin')renderInvite();},60000);
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')&&!DEV){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
+<script type="module" src="cloud.js"></script>
 </body>
 </html>
